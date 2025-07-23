@@ -6,29 +6,35 @@ from abstractions.controller import IController
 
 from constants.api_lk import APILK
 from constants.api_status import APIStatus
-from constants.user_type import UserType
 
-from dtos.requests.user.login import LoginRequestDTO
+from dtos.requests.user.registration import UserRegistrationRequestDTO
 
 from dtos.responses.base import BaseResponseDTO
 
 from errors.bad_input_error import BadInputError
+from errors.not_found_error import NotFoundError
 from errors.unexpected_response_error import UnexpectedResponseError
 
-from services.user.login import UserLoginService
+from repositories.user import UserRepository
 
-from start_utils import admin_user
+from services.user.registration import UserRegistrationService
+
+from start_utils import db_session
 
 from utilities.dictionary import DictionaryUtility
 
 
-class UserEmployeeLoginController(IController):
+class UserRegistrationController(IController):
 
     def __init__(self, urn: str = None) -> None:
         super().__init__(urn)
-        self.api_name = APILK.EMPLOYEE_LOGIN
+        self.api_name = APILK.REGISTRATION
 
-    async def post(self, request: Request, request_payload: LoginRequestDTO):
+    async def post(
+        self,
+        request: Request,
+        request_payload: UserRegistrationRequestDTO
+    ) -> JSONResponse:
 
         self.logger.debug("Fetching request URN")
         self.urn = request.state.urn
@@ -43,6 +49,7 @@ class UserEmployeeLoginController(IController):
 
             self.logger.debug("Validating request")
             self.request_payload = request_payload.model_dump()
+            self.request_payload.update({"user_id": request.state.user_id})
 
             await self.validate_request(
                 urn=self.urn,
@@ -50,25 +57,32 @@ class UserEmployeeLoginController(IController):
                 request_payload=self.request_payload,
                 request_headers=dict(request.headers.mutablecopy()),
                 api_name=self.api_name,
-                user_id=admin_user.id,
+                user_id=self.user_id,
             )
             self.logger.debug("Verified request")
 
-            self.request_payload.update({"user_type": UserType.EMPLOYEE})
-
-            self.logger.debug("Running login user service")
-            response_dto = await UserLoginService(
-                urn=self.urn, user_urn=self.user_urn, api_name=self.api_name
+            self.logger.debug("Running registration user service")
+            response_dto: BaseResponseDTO = await UserRegistrationService(
+                urn=self.urn,
+                user_urn=self.user_urn,
+                api_name=self.api_name,
+                user_id=self.user_id,
+                user_repository=UserRepository(
+                    urn=self.urn,
+                    user_urn=self.user_urn,
+                    api_name=self.api_name,
+                    session=db_session,
+                ),
             ).run(data=self.request_payload)
 
             self.logger.debug("Preparing response metadata")
             http_status_code = HTTPStatus.OK
             self.logger.debug("Prepared response metadata")
 
-        except (BadInputError, UnexpectedResponseError) as err:
+        except (BadInputError, UnexpectedResponseError, NotFoundError) as err:
 
             self.logger.error(
-                f"{err.__class__} error occured while logging in user: {err}"
+                f"{err.__class__} error occured while registering user: {err}"
             )
             self.logger.debug("Preparing response metadata")
             response_dto: BaseResponseDTO = BaseResponseDTO(
@@ -84,19 +98,20 @@ class UserEmployeeLoginController(IController):
         except Exception as err:
 
             self.logger.error(
-                f"{err.__class__} error occured while logging in user: {err}"
+                f"{err.__class__} error occured while registering user: {err}"
             )
 
             self.logger.debug("Preparing response metadata")
             response_dto: BaseResponseDTO = BaseResponseDTO(
                 transactionUrn=self.urn,
                 status=APIStatus.FAILED,
-                responseMessage="Failed to login user.",
+                responseMessage="Failed to register users.",
                 responseKey="error_internal_server_error",
                 data={},
             )
             http_status_code = HTTPStatus.INTERNAL_SERVER_ERROR
             self.logger.debug("Prepared response metadata")
+
         return JSONResponse(
             content=response_dto.to_dict(), status_code=http_status_code
         )

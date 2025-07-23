@@ -1,7 +1,7 @@
 from pydantic import BaseModel
 
 
-class RegisterRequestDTO(BaseModel):
+class UserRegistrationRequestDTO(BaseModel):
 
     reference_number: str
     email: str

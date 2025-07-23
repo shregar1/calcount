@@ -7,14 +7,19 @@ from abstractions.controller import IController
 from constants.api_lk import APILK
 from constants.api_status import APIStatus
 
-from dtos.requests.user.logout import LogoutRequestDTO
+from dtos.requests.user.logout import UserLogoutRequestDTO
 
 from dtos.responses.base import BaseResponseDTO
 
 from errors.bad_input_error import BadInputError
+from errors.not_found_error import NotFoundError
 from errors.unexpected_response_error import UnexpectedResponseError
 
+from repositories.user import UserRepository
+
 from services.user.logout import UserLogoutService
+
+from start_utils import db_session
 
 from utilities.dictionary import DictionaryUtility
 
@@ -25,7 +30,11 @@ class UserLogoutController(IController):
         super().__init__(urn)
         self.api_name = APILK.LOGOUT
 
-    async def post(self, request: Request, request_payload: LogoutRequestDTO):
+    async def post(
+        self,
+        request: Request,
+        request_payload: UserLogoutRequestDTO
+    ) -> JSONResponse:
 
         self.logger.debug("Fetching request URN")
         self.urn = request.state.urn
@@ -54,14 +63,23 @@ class UserLogoutController(IController):
 
             self.logger.debug("Running online user service")
             response_dto: BaseResponseDTO = await UserLogoutService(
-                urn=self.urn, user_urn=self.user_urn, api_name=self.api_name
+                urn=self.urn,
+                user_urn=self.user_urn,
+                api_name=self.api_name,
+                user_id=self.user_id,
+                user_repository=UserRepository(
+                    urn=self.urn,
+                    user_urn=self.user_urn,
+                    api_name=self.api_name,
+                    session=db_session,
+                ),
             ).run(data=self.request_payload)
 
             self.logger.debug("Preparing response metadata")
             http_status_code = HTTPStatus.OK
             self.logger.debug("Prepared response metadata")
 
-        except (BadInputError, UnexpectedResponseError) as err:
+        except (BadInputError, UnexpectedResponseError, NotFoundError) as err:
 
             self.logger.error(
                 f"{err.__class__} error occured while logging out user: {err}"

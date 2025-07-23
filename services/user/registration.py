@@ -17,7 +17,7 @@ from models.user import User
 
 from repositories.user import UserRepository
 
-from start_utils import db_session, user_type_lk_global_context_by_name
+from start_utils import db_session
 
 
 class UserRegistrationService(IService):
@@ -48,7 +48,7 @@ class UserRegistrationService(IService):
 
             self.logger.debug("User already exists")
             raise BadInputError(
-                responseMessage="Email already registered. Please choose a different email address.",
+                responseMessage="Email already registered.",
                 responseKey="error_email_already_registered",
                 http_status_code=HTTPStatus.BAD_REQUEST,
             )
@@ -61,9 +61,6 @@ class UserRegistrationService(IService):
                 data.get("password").encode("utf-8"),
                 os.getenv("BCRYPT_SALT").encode("utf8"),
             ).decode("utf8"),
-            user_type_id=user_type_lk_global_context_by_name.get(
-                data.get("user_type")
-            ).id,
             is_deleted=False,
             created_on=datetime.now(),
         )

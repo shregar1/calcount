@@ -1,6 +1,6 @@
 from pydantic import BaseModel
 
 
-class LogoutRequestDTO(BaseModel):
+class UserLogoutRequestDTO(BaseModel):
 
     reference_number: str

@@ -25,6 +25,7 @@ class User(Base):
     password = Column(String, nullable=False)
     is_deleted = Column(Boolean, nullable=False, default=False)
     last_login = Column(DateTime(timezone=True))
+    is_logged_in = Column(Boolean, nullable=False, default=False)
     created_on = Column(
         DateTime(timezone=True),
         nullable=False,

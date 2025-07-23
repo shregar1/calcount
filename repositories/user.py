@@ -72,26 +72,6 @@ class UserRepository(IRepository):
 
         return record if record else None
 
-    def retrieve_record_by_email_user_type_id(
-        self, email: str, user_type_id: int, is_deleted: bool = False
-    ) -> User:
-
-        start_time = datetime.now()
-        record = (
-            self.session.query(User)
-            .filter(
-                User.email == email,
-                User.user_type_id == user_type_id,
-                User.is_deleted == is_deleted,
-            )
-            .first()
-        )
-        end_time = datetime.now()
-        execution_time = end_time - start_time
-        self.logger.info(f"Execution time: {execution_time} seconds")
-
-        return record if record else None
-
     def retrieve_record_by_id(self, id: str, is_deleted: bool = False) -> User:
 
         start_time = datetime.now()

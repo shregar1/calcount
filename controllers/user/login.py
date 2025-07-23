@@ -6,31 +6,35 @@ from abstractions.controller import IController
 
 from constants.api_lk import APILK
 from constants.api_status import APIStatus
-from constants.user_type import UserType
 
-from dtos.requests.user.register import RegisterRequestDTO
+from dtos.requests.user.login import UserLoginRequestDTO
 
 from dtos.responses.base import BaseResponseDTO
 
 from errors.bad_input_error import BadInputError
+from errors.not_found_error import NotFoundError
 from errors.unexpected_response_error import UnexpectedResponseError
 
-from services.user.register import UserRegistrationService
+from repositories.user import UserRepository
 
-from start_utils import admin_user
+from services.user.login import UserLoginService
+
+from start_utils import db_session
 
 from utilities.dictionary import DictionaryUtility
 
 
-class UserCandidateRegisterstionController(IController):
+class UserLoginController(IController):
 
     def __init__(self, urn: str = None) -> None:
         super().__init__(urn)
-        self.api_name = APILK.EMPLOYEE_REGISTRATION
+        self.api_name = APILK.LOGIN
 
     async def post(
-        self, request: Request, request_payload: RegisterRequestDTO
-    ):
+        self,
+        request: Request,
+        request_payload: UserLoginRequestDTO
+    ) -> JSONResponse:
 
         self.logger.debug("Fetching request URN")
         self.urn = request.state.urn
@@ -44,35 +48,38 @@ class UserCandidateRegisterstionController(IController):
         try:
 
             self.logger.debug("Validating request")
-            self.request_payload = request_payload.model_dump()
             await self.validate_request(
                 urn=self.urn,
                 user_urn=self.user_urn,
-                request_payload=self.request_payload,
+                request_payload=request_payload.model_dump(),
                 request_headers=dict(request.headers.mutablecopy()),
                 api_name=self.api_name,
-                user_id=admin_user.id,
+                user_id=self.user_id,
             )
             self.logger.debug("Verified request")
 
-            self.request_payload.update({"user_type": UserType.CANDIDATE})
-
-            self.logger.debug("Running user registration service")
-            service = UserRegistrationService(
-                urn=self.urn, user_urn=self.user_urn, api_name=self.api_name
-            )
-            response_dto: BaseResponseDTO = await service.run(
-                data=self.request_payload
-            )
+            self.logger.debug("Running login user service")
+            response_dto: BaseResponseDTO = await UserLoginService(
+                urn=self.urn,
+                user_urn=self.user_urn,
+                api_name=self.api_name,
+                user_id=self.user_id,
+                user_repository=UserRepository(
+                    urn=self.urn,
+                    user_urn=self.user_urn,
+                    api_name=self.api_name,
+                    session=db_session,
+                ),
+            ).run(request_dto=request_payload)
 
             self.logger.debug("Preparing response metadata")
             http_status_code = HTTPStatus.OK
             self.logger.debug("Prepared response metadata")
 
-        except (BadInputError, UnexpectedResponseError) as err:
+        except (BadInputError, UnexpectedResponseError, NotFoundError) as err:
 
             self.logger.error(
-                f"{err.__class__} error occured while registering user: {err}"
+                f"{err.__class__} error occured while logging in user: {err}"
             )
             self.logger.debug("Preparing response metadata")
             response_dto: BaseResponseDTO = BaseResponseDTO(
@@ -88,14 +95,14 @@ class UserCandidateRegisterstionController(IController):
         except Exception as err:
 
             self.logger.error(
-                f"{err.__class__} error occured while registering user: {err}"
+                f"{err.__class__} error occured while logging in user: {err}"
             )
 
             self.logger.debug("Preparing response metadata")
             response_dto: BaseResponseDTO = BaseResponseDTO(
                 transactionUrn=self.urn,
                 status=APIStatus.FAILED,
-                responseMessage="Failed to register user.",
+                responseMessage="Failed to login users.",
                 responseKey="error_internal_server_error",
                 data={},
             )

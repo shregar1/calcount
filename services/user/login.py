@@ -9,6 +9,7 @@ from abstractions.service import IService
 from constants.api_status import APIStatus
 
 from errors.bad_input_error import BadInputError
+from errors.not_found_error import NotFoundError
 
 from dtos.responses.base import BaseResponseDTO
 
@@ -16,48 +17,44 @@ from models.user import User
 
 from repositories.user import UserRepository
 
-from start_utils import db_session, user_type_lk_global_context_by_name
-
 from utilities.jwt import JWTUtility
 
 
 class UserLoginService(IService):
 
     def __init__(
-        self, urn: str = None, user_urn: str = None, api_name: str = None
+        self,
+        urn: str = None,
+        user_urn: str = None,
+        api_name: str = None,
+        user_id: int = None,
+        user_repository: UserRepository = None,
     ) -> None:
         super().__init__(urn, user_urn, api_name)
         self.urn = urn
         self.user_urn = user_urn
         self.api_name = api_name
+        self.user_id = user_id
 
         self.jwt_utility = JWTUtility(urn=self.urn)
-        self.user_repository = UserRepository(
-            urn=self.urn,
-            user_urn=self.user_urn,
-            api_name=self.api_name,
-            session=db_session,
-        )
+        self.user_repository = user_repository
 
     async def run(self, data: dict) -> dict:
 
         self.logger.debug("Fetching user")
         user: User = (
-            self.user_repository.retrieve_record_by_email_user_type_id(
+            self.user_repository.retrieve_record_by_email(
                 email=data.get("email"),
-                user_type_id=user_type_lk_global_context_by_name.get(
-                    data.get("user_type")
-                ).id,
                 is_deleted=False,
             )
         )
         self.logger.debug("Fetched user")
 
         if not user:
-            raise BadInputError(
+            raise NotFoundError(
                 responseMessage="User not Found. Incorrect email.",
                 responseKey="error_authorisation_failed",
-                http_status_code=HTTPStatus.BAD_REQUEST,
+                http_status_code=HTTPStatus.NOT_FOUND,
             )
 
         if user.password != bcrypt.hashpw(
@@ -95,7 +92,7 @@ class UserLoginService(IService):
             responseMessage="Successfully logged in the user.",
             responseKey="success_user_login",
             data={
-                "status": user.is_logged_in,
+                "status": True,
                 "token": token,
                 "user_urn": user.urn,
             },

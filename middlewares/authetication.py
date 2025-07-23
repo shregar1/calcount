@@ -104,7 +104,8 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         except Exception as err:
 
             logger.debug(
-                f"{err.__class__} occured while authentiacting jwt token, {err}",
+                f"{err.__class__} occured while authentiacting jwt token, "
+                f"{err}",
                 urn=request.state.urn,
             )
 

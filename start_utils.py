@@ -1,16 +1,17 @@
 import os
-import bcrypt
 import sys
 
 from dotenv import load_dotenv
+from langchain_google_genai import ChatGoogleGenerativeAI
 from loguru import logger
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
 from configurations.db import DBConfiguration, DBConfigurationDTO
+from configurations.usda import USDAConfiguration, USDAConfigurationDTO
 
 from models import Base
-from repositories.user import UserRepository
+
 
 logger.remove(0)
 logger.add(
@@ -29,6 +30,7 @@ load_dotenv()
 
 logger.info("Loading Configurations")
 db_configuration: DBConfigurationDTO = DBConfiguration().get_config()
+usda_configuration: USDAConfigurationDTO = USDAConfiguration().get_config()
 logger.info("Loaded Configurations")
 
 # Access environment variables
@@ -39,7 +41,8 @@ ALGORITHM: str = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
     os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 1440)
 )
-BASE_URL: str = os.getenv("BASE_URL")
+GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY")
+USDA_API_KEY: str = os.getenv("USDA_API_KEY")
 logger.info("Loaded environment variables")
 
 logger.info("Initializing PostgreSQL database")
@@ -57,18 +60,10 @@ db_session = Session()
 Base.metadata.create_all(engine)
 logger.info("Initialized PostgreSQL database")
 
-admin_user = UserRepository(
-    urn=None, session=db_session
-).retrieve_record_by_email_and_password(
-    email=os.getenv("ADMIN_EMAIL"),
-    password=bcrypt.hashpw(
-        os.getenv("ADMIN_PASSWORD").encode("utf8"),
-        os.getenv("BCRYPT_SALT").encode("utf8"),
-    ).decode("utf8"),
+llm = ChatGoogleGenerativeAI(
+    model="gemini-1.5-pro-latest",
+    google_api_key=GOOGLE_API_KEY,
 )
-
-if admin_user is None:
-    raise RuntimeError("Admin user not found")
 
 unprotected_routes: set = {
     "/health",
