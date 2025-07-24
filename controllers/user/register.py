@@ -1,11 +1,16 @@
-from fastapi import Request
+from fastapi import Request, Depends
 from fastapi.responses import JSONResponse
 from http import HTTPStatus
+from sqlalchemy.orm import Session
+from typing import Callable
 
 from abstractions.controller import IController
 
 from constants.api_lk import APILK
 from constants.api_status import APIStatus
+
+from dependencies.db import DBDependency
+from dependencies.user.register import UserRegistrationDependency
 
 from dtos.requests.user.registration import UserRegistrationRequestDTO
 
@@ -14,12 +19,6 @@ from dtos.responses.base import BaseResponseDTO
 from errors.bad_input_error import BadInputError
 from errors.not_found_error import NotFoundError
 from errors.unexpected_response_error import UnexpectedResponseError
-
-from repositories.user import UserRepository
-
-from services.user.registration import UserRegistrationService
-
-from start_utils import db_session
 
 from utilities.dictionary import DictionaryUtility
 
@@ -33,7 +32,11 @@ class UserRegistrationController(IController):
     async def post(
         self,
         request: Request,
-        request_payload: UserRegistrationRequestDTO
+        request_payload: UserRegistrationRequestDTO,
+        session: Session = Depends(DBDependency.derive),
+        user_registration_service_factory: Callable = Depends(
+            UserRegistrationDependency.derive
+        )
     ) -> JSONResponse:
 
         self.logger.debug("Fetching request URN")
@@ -59,17 +62,12 @@ class UserRegistrationController(IController):
             self.logger.debug("Verified request")
 
             self.logger.debug("Running registration user service")
-            response_dto: BaseResponseDTO = await UserRegistrationService(
+            response_dto = await user_registration_service_factory(
                 urn=self.urn,
                 user_urn=self.user_urn,
                 api_name=self.api_name,
                 user_id=self.user_id,
-                user_repository=UserRepository(
-                    urn=self.urn,
-                    user_urn=self.user_urn,
-                    api_name=self.api_name,
-                    session=db_session,
-                ),
+                session=session,
             ).run(request_dto=request_payload)
 
             self.logger.debug("Preparing response metadata")

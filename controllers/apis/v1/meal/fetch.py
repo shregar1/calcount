@@ -1,25 +1,23 @@
-from fastapi import Request
+from fastapi import Request, Depends
 from fastapi.responses import JSONResponse
 from http import HTTPStatus
+from sqlalchemy.orm import Session
+from typing import Callable
 
 from abstractions.controller import IController
 
 from constants.api_lk import APILK
 from constants.api_status import APIStatus
 
-from dtos.requests.api.meal.fetch import FetchMealRequestDTO
+from dependencies.apis.v1.meal.fetch import FetchMealDependency
+from dependencies.db import DBDependency
 
+from dtos.requests.api.meal.fetch import FetchMealRequestDTO
 from dtos.responses.base import BaseResponseDTO
 
 from errors.bad_input_error import BadInputError
 from errors.not_found_error import NotFoundError
 from errors.unexpected_response_error import UnexpectedResponseError
-
-from repositories.meal_log import MealLogRepository
-
-from services.apis.meal.fetch import FetchMealService
-
-from start_utils import db_session
 
 from utilities.dictionary import DictionaryUtility
 
@@ -33,7 +31,11 @@ class FetchMealController(IController):
     async def get(
         self,
         request: Request,
-        request_payload: FetchMealRequestDTO
+        request_payload: FetchMealRequestDTO,
+        session: Session = Depends(DBDependency.derive),
+        fetch_meal_service_factory: Callable = Depends(
+            FetchMealDependency.derive
+        )
     ) -> JSONResponse:
 
         self.logger.debug("Fetching request URN")
@@ -59,18 +61,15 @@ class FetchMealController(IController):
             self.logger.debug("Verified request")
 
             self.logger.debug("Running fetch meal service")
-            response_dto: BaseResponseDTO = await FetchMealService(
+            response_dto: BaseResponseDTO = await fetch_meal_service_factory(
                 urn=self.urn,
                 user_urn=self.user_urn,
                 api_name=self.api_name,
                 user_id=self.user_id,
-                meal_log_repository=MealLogRepository(
-                    urn=self.urn,
-                    user_urn=self.user_urn,
-                    api_name=self.api_name,
-                    session=db_session,
-                ),
-            ).run(request_dto=request_payload)
+                session=session,
+            ).run(
+                request_dto=request_payload
+            )
 
             self.logger.debug("Preparing response metadata")
             http_status_code = HTTPStatus.OK

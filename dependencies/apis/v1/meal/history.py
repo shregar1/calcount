@@ -10,11 +10,8 @@ from start_utils import db_session
 
 class FetchMealHistoryDependency(IDependency):
 
-    def __init__(self, urn: str, user_urn: str, api_name: str) -> None:
-        super().__init__(urn, user_urn, api_name)
-
+    @staticmethod
     def derive(
-        self,
         urn: str,
         user_urn: str,
         api_name: str,

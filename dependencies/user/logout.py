@@ -1,4 +1,5 @@
-from sqlalchemy.orm import Session
+from typing import Callable
+
 from abstractions.dependency import IDependency
 
 from services.user.logout import UserLogoutService
@@ -10,26 +11,25 @@ from start_utils import db_session
 
 class UserLogoutDependency(IDependency):
 
-    def __init__(self, urn: str, user_urn: str, api_name: str) -> None:
-        super().__init__(urn, user_urn, api_name)
-
-    def derive(
-        self,
-        urn: str,
-        user_urn: str,
-        api_name: str,
-        user_id: str,
-        session: Session = db_session,
-    ) -> UserLogoutService:
-        return UserLogoutService(
-            urn=urn,
-            user_urn=user_urn,
-            api_name=api_name,
-            user_id=user_id,
-            user_repository=UserRepository(
+    @staticmethod
+    def derive() -> Callable:
+        def factory(
+            urn,
+            user_urn,
+            api_name,
+            user_id,
+            session=db_session,
+        ):
+            return UserLogoutService(
                 urn=urn,
                 user_urn=user_urn,
                 api_name=api_name,
-                session=session,
-            ),
-        )
+                user_id=user_id,
+                user_repository=UserRepository(
+                    urn=urn,
+                    user_urn=user_urn,
+                    api_name=api_name,
+                    session=session,
+                ),
+            )
+        return factory
