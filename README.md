@@ -58,7 +58,6 @@ calcount/
 ├── models/               # SQLAlchemy ORM models (database tables)
 ├── repositories/         # Database access layer (CRUD operations, queries)
 │   ├── meal_log.py       # Meal log repository
-│   ├── profile.py        # User profile repository
 │   └── user.py           # User repository
 ├── services/             # Business logic layer (application services)
 │   ├── apis/             # API-specific services (e.g., meal add/fetch)
