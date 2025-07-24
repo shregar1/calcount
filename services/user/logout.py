@@ -23,17 +23,56 @@ class UserLogoutService(IUserService):
         self, urn: str = None, user_urn: str = None, api_name: str = None
     ) -> None:
         super().__init__(urn, user_urn, api_name)
-        self.urn = urn
-        self.user_urn = user_urn
-        self.api_name = api_name
-
-        self.jwt_utility = JWTUtility(urn=self.urn)
-        self.user_repository = UserRepository(
-            urn=self.urn,
-            user_urn=self.user_urn,
-            api_name=self.api_name,
+        self._urn = urn
+        self._user_urn = user_urn
+        self._api_name = api_name
+        self._user_repository = UserRepository(
+            urn=self._urn,
+            user_urn=self._user_urn,
+            api_name=self._api_name,
             session=db_session,
         )
+        self._jwt_utility = JWTUtility(urn=self._urn)
+
+    @property
+    def urn(self):
+        return self._urn
+
+    @urn.setter
+    def urn(self, value):
+        self._urn = value
+
+    @property
+    def user_urn(self):
+        return self._user_urn
+
+    @user_urn.setter
+    def user_urn(self, value):
+        self._user_urn = value
+
+    @property
+    def api_name(self):
+        return self._api_name
+
+    @api_name.setter
+    def api_name(self, value):
+        self._api_name = value
+
+    @property
+    def user_repository(self):
+        return self._user_repository
+
+    @user_repository.setter
+    def user_repository(self, value):
+        self._user_repository = value
+
+    @property
+    def jwt_utility(self):
+        return self._jwt_utility
+
+    @jwt_utility.setter
+    def jwt_utility(self, value):
+        self._jwt_utility = value
 
     async def run(self, data: dict) -> dict:
 

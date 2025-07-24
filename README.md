@@ -1,5 +1,7 @@
 # CalCount
 
+---
+
 ## Description
 CalCount is a nutrition and meal management API service. It allows users to register, log in, and manage meal logs, ingredients, and nutritional information. The backend is built with FastAPI, SQLAlchemy, and Alembic for migrations, and integrates with LLMs for recipe instructions.
 
@@ -10,6 +12,98 @@ CalCount is a nutrition and meal management API service. It allows users to regi
 - Meal logging and ingredient management
 - Integration with USDA food data
 - LLM-powered recipe instructions
+
+---
+
+## Project Structure
+
+```
+calcount/
+├── abstractions/         # Abstract base classes and interfaces for controllers, services, repositories, and utilities. Promotes code reuse and enforces contracts.
+│   ├── controller.py     # Base controller class/interface
+│   ├── error.py          # Base error/exception classes
+│   ├── factory.py        # Factory patterns for object creation
+│   ├── model.py          # Abstract data models
+│   ├── repository.py     # Base repository interface
+│   ├── service.py        # Base service interface
+│   └── utility.py        # Abstract utility classes
+├── alembic/              # Alembic migration scripts and configuration for database schema management
+│   ├── env.py            # Alembic environment setup
+│   ├── versions/         # Auto-generated migration scripts
+│   └── ...
+├── config/               # Static configuration files (JSON, YAML, etc.)
+│   ├── db/               # Database connection/configuration
+│   └── usda/             # USDA API configuration
+├── configurations/       # Python modules for loading and managing configuration
+│   ├── db.py             # Database config loader
+│   └── usda.py           # USDA config loader
+├── constants/            # Constant values used throughout the app
+│   ├── api_lk.py         # API lookup keys
+│   ├── api_status.py     # API status codes/messages
+│   ├── db/               # Database table names, etc.
+│   ├── payload_type.py   # Payload type constants
+│   └── regular_expression.py # Regex patterns
+├── controllers/          # FastAPI route controllers (handle HTTP requests)
+│   ├── apis/             # API versioned controllers (e.g., v1)
+│   │   ├── meal/         # Meal-related endpoints (add, fetch, history, etc.)
+│   │   └── user/         # User-related endpoints (login, register, logout, etc.)
+│   └── ...
+├── dependencies/         # FastAPI dependency providers (e.g., for DI, DB sessions)
+├── dtos/                 # Data Transfer Objects (request/response schemas)
+│   ├── requests/         # Request DTOs (organized by API and user)
+│   ├── responses/        # Response DTOs
+│   └── ...
+├── errors/               # Custom error/exception classes for API and business logic
+├── middlewares/          # FastAPI middleware (authentication, rate limiting, request context, etc.)
+├── models/               # SQLAlchemy ORM models (database tables)
+├── repositories/         # Database access layer (CRUD operations, queries)
+│   ├── meal_log.py       # Meal log repository
+│   ├── profile.py        # User profile repository
+│   └── user.py           # User repository
+├── services/             # Business logic layer (application services)
+│   ├── apis/             # API-specific services (e.g., meal add/fetch)
+│   └── user/             # User-related services (login, logout, register)
+├── tests/                # Unit and integration tests
+│   ├── services/         # Service layer tests
+│   └── ...
+├── utilities/            # Utility/helper functions and classes
+│   ├── dictionary.py     # Dictionary utilities
+│   └── jwt.py            # JWT token utilities
+├── app.py                # FastAPI app entry point (creates app, adds routers, middleware)
+├── start_utils.py        # Startup utilities (config loading, logger setup, etc.)
+├── requirements.txt      # Python dependencies
+├── Dockerfile            # Docker build file for containerization
+├── docker-compose.yml    # Docker Compose config for multi-container setup
+└── README.md             # Project documentation
+```
+
+---
+
+## Routing Pattern
+
+This project uses a modular, versioned routing pattern for its API endpoints:
+
+- **Versioned API Structure:**
+  - All API endpoints are grouped under versioned paths (e.g., `/api/v1/`, `/user/`).
+  - This allows for easy evolution of the API without breaking existing clients.
+
+- **Modular Controllers:**
+  - Each resource (such as `meal` or `user`) has its own controller module under `controllers/apis/v1/`, `controllers/user/`.
+  - Endpoints are further organized by resource and action (e.g., `add`, `fetch`, `history`, `login`, `register`, `logout`).
+
+- **Router Aggregation:**
+  - Each controller defines its own FastAPI router.
+  - Routers are aggregated in the main app, so all endpoints are registered cleanly and predictably.
+
+- **Example Endpoint Paths:**
+  - `/api/v1/meal/add` — Add a new meal log
+  - `/api/v1/meal/fetch` — Fetch meal details
+  - `/api/v1/meal/history` — Fetch meal history for a user
+  - `/user/login` — User login
+  - `/user/register` — User registration
+  - `/user/logout` — User logout
+
+This pattern ensures scalability, maintainability, and clarity for both developers and API consumers.
 
 ---
 
@@ -192,3 +286,9 @@ curl --location 'http://0.0.0.0:8003/api/v1/meal/add' \
 
 ## License
 MIT License
+
+---
+
+## Made with ❤️
+
+This project is made with love, [FastAPI](https://fastapi.tiangolo.com/), and modern web technologies. We strive for clean code, robust architecture, and a great developer experience.

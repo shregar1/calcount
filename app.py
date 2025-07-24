@@ -14,6 +14,7 @@ from controllers.user import router as UserRouter
 from controllers.apis import router as APISRouter
 
 from middlewares.authetication import AuthenticationMiddleware
+from middlewares.rate_limit import RateLimitMiddleware
 from middlewares.request_context import RequestContextMiddleware
 
 
@@ -57,6 +58,7 @@ app.add_middleware(
 
 logger.info("Initialising middleware stack")
 app.add_middleware(AuthenticationMiddleware)
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(RequestContextMiddleware)
 logger.info("Initialised middleware stack")
 

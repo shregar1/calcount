@@ -4,14 +4,18 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from time import time
 
-from start_utils import logger
+from start_utils import (
+    logger,
+    RATE_LIMIT_MAX_REQUESTS,
+    RATE_LIMIT_WINDOW_SECONDS,
+)
 
 
 class RateLimitMiddleware(BaseHTTPMiddleware):
-    def __init__(self, app, max_requests: int = 60, window_seconds: int = 60):
+    def __init__(self, app):
         super().__init__(app)
-        self.max_requests = max_requests
-        self.window_seconds = window_seconds
+        self.max_requests = RATE_LIMIT_MAX_REQUESTS
+        self.window_seconds = RATE_LIMIT_WINDOW_SECONDS
         self.clients = {}
 
     async def dispatch(self, request: Request, call_next):

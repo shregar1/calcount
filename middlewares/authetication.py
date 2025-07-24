@@ -1,6 +1,6 @@
 from fastapi import Request, Response
 from fastapi.responses import JSONResponse
-from http import HTTPStatus
+from http import HTTPStatus, HTTPMethod
 from starlette.middleware.base import BaseHTTPMiddleware
 
 from constants.api_status import APIStatus
@@ -23,7 +23,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
         urn: str = request.state.urn
         endpoint: str = request.url.path
 
-        if request.method == "OPTIONS":
+        if request.method == HTTPMethod.OPTIONS:
             return await call_next(request)
 
         logger.debug(f"Received request for endpoint: {endpoint}")
@@ -115,6 +115,7 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                 status=APIStatus.FAILED,
                 responseMessage="JWT Authentication failed.",
                 responseKey="error_authetication_error",
+                data={},
             )
             http_status_code = HTTPStatus.UNAUTHORIZED
             logger.debug("Prepared response metadata", urn=request.state.urn)

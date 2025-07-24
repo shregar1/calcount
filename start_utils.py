@@ -10,6 +10,8 @@ from sqlalchemy.orm import sessionmaker
 from configurations.db import DBConfiguration, DBConfigurationDTO
 from configurations.usda import USDAConfiguration, USDAConfigurationDTO
 
+from constants.default import Default
+
 
 logger.remove(0)
 logger.add(
@@ -37,10 +39,25 @@ APP_NAME: str = os.environ.get("APP_NAME")
 SECRET_KEY: str = os.getenv("SECRET_KEY")
 ALGORITHM: str = os.getenv("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
-    os.getenv("ACCESS_TOKEN_EXPIRE_MINUTES", 1440)
+    os.getenv(
+        "ACCESS_TOKEN_EXPIRE_MINUTES",
+        Default.ACCESS_TOKEN_EXPIRE_MINUTES,
+    )
 )
 GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY")
 USDA_API_KEY: str = os.getenv("USDA_API_KEY")
+RATE_LIMIT_MAX_REQUESTS: int = int(
+    os.getenv(
+        "RATE_LIMIT_MAX_REQUESTS",
+        Default.RATE_LIMIT_MAX_REQUESTS,
+    )
+)
+RATE_LIMIT_WINDOW_SECONDS: int = int(
+    os.getenv(
+        "RATE_LIMIT_WINDOW_SECONDS",
+        Default.RATE_LIMIT_WINDOW_SECONDS,
+    )
+)
 logger.info("Loaded environment variables")
 
 logger.info("Initializing PostgreSQL database")

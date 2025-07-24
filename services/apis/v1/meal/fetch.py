@@ -23,11 +23,51 @@ class FetchMealService(IMealAPIService):
         meal_log_repository: MealLogRepository = None
     ) -> None:
         super().__init__(urn, user_urn, api_name)
-        self.urn = urn
-        self.user_urn = user_urn
-        self.api_name = api_name
-        self.user_id = user_id
-        self.meal_log_repository = meal_log_repository
+        self._urn = urn
+        self._user_urn = user_urn
+        self._api_name = api_name
+        self._user_id = user_id
+        self._meal_log_repository = meal_log_repository
+
+    @property
+    def urn(self):
+        return self._urn
+
+    @urn.setter
+    def urn(self, value):
+        self._urn = value
+
+    @property
+    def user_urn(self):
+        return self._user_urn
+
+    @user_urn.setter
+    def user_urn(self, value):
+        self._user_urn = value
+
+    @property
+    def api_name(self):
+        return self._api_name
+
+    @api_name.setter
+    def api_name(self, value):
+        self._api_name = value
+
+    @property
+    def user_id(self):
+        return self._user_id
+
+    @user_id.setter
+    def user_id(self, value):
+        self._user_id = value
+
+    @property
+    def meal_log_repository(self):
+        return self._meal_log_repository
+
+    @meal_log_repository.setter
+    def meal_log_repository(self, value):
+        self._meal_log_repository = value
 
     async def run(self, request_dto: FetchMealRequestDTO) -> BaseResponseDTO:
 
@@ -69,7 +109,8 @@ class FetchMealService(IMealAPIService):
                 "ingredients_per_serving": meal_data.get("ingredients"),
                 "instructions_per_serving": meal_data.get("instructions"),
                 "total_calories_per_serving": total_calories_per_serving,
-                "calories_unit": calories_unit,
                 "total_calories": total_calories,
+                "calories_unit": calories_unit,
+                "source": "usda"
             },
         )
