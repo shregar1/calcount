@@ -72,7 +72,7 @@ class MealLogRepository(IRepository):
 
         return record if record else None
 
-    def retrive_history_by_user_id(
+    def retrieve_history_by_user_id(
         self, user_id: int, is_deleted: bool = False
     ) -> List[MealLog]:
 

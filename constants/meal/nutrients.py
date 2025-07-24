@@ -32,4 +32,3 @@ class Nutrients:
             "Fiber, total dietary",
             "Total Sugars"
         ]
-

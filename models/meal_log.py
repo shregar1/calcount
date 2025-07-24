@@ -35,6 +35,9 @@ class MealLog(Base):
     nutrients = Column(JSON)
     ingredients = Column(JSON)
     instructions = Column(JSON)
+    total_calories_per_serving = Column(Integer)
+    calories_unit = Column(String)
+    total_calories = Column(Integer)
     is_deleted = Column(Boolean, nullable=False, default=False)
     created_on = Column(
         DateTime(timezone=True),

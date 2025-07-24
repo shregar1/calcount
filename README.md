@@ -44,14 +44,31 @@ alembic upgrade head
   ```bash
   alembic downgrade -1
   ```
+- **Downgrade to a specific revision:**
+  ```bash
+  alembic downgrade <revision_id>
+  ```
 - **Show current revision:**
   ```bash
   alembic current
+  ```
+- **Show all heads (branches):**
+  ```bash
+  alembic heads
   ```
 - **Stamp the database with a specific revision (without running migrations):**
   ```bash
   alembic stamp head
   ```
+- **Verbose output for troubleshooting:**
+  ```bash
+  alembic downgrade -1 --verbose
+  ```
+
+### Alembic Troubleshooting
+- If downgrade does not work, check that your migration script's `downgrade()` function is implemented and not empty.
+- If you see errors or unexpected behavior, check the output of the above commands and ensure your `alembic_version` table is in sync with your migration files.
+- If you have multiple heads, resolve them using `alembic heads` and merge as needed.
 
 ---
 

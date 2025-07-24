@@ -1,7 +1,7 @@
 """schema
 
 Revision ID: 31c7fc3c6b39
-Revises: 
+Revises: 31c7fc3c6b39
 Create Date: 2025-07-23 19:39:15.685160
 
 """
@@ -54,6 +54,9 @@ def upgrade() -> None:
         sa.Column('nutrients', sa.JSON, nullable=False),
         sa.Column('ingredients', sa.JSON, nullable=False),
         sa.Column('instructions', sa.JSON, nullable=False),
+        sa.Column('total_calories_per_serving', sa.Integer, nullable=False),
+        sa.Column('calories_unit', sa.String, nullable=False),
+        sa.Column('total_calories', sa.Integer, nullable=False),
         sa.Column('is_deleted', sa.Boolean, nullable=False, default=False),
         sa.Column('created_on', sa.DateTime(timezone=True), nullable=False),
         sa.Column('created_by', sa.BigInteger, nullable=False),

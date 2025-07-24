@@ -71,6 +71,9 @@ class AddMealService(IMealAPIService):
             nutrients=meal_data.get("nutrients"),
             ingredients=meal_data.get("ingredients"),
             instructions=meal_data.get("instructions"),
+            total_calories_per_serving=total_calories_per_serving,
+            calories_unit=calories_unit,
+            total_calories=total_calories,
             created_on=datetime.now(),
             created_by=self.user_id
         )
@@ -91,9 +94,10 @@ class AddMealService(IMealAPIService):
                 "nutrients_per_serving": meal_log.nutrients,
                 "ingredients_per_serving": meal_log.ingredients,
                 "instructions_per_serving": meal_log.instructions,
-                "total_calories_per_serving": total_calories_per_serving,
-                "calories_unit": calories_unit,
-                "total_calories": total_calories,
+                "total_calories_per_serving":
+                    meal_log.total_calories_per_serving,
+                "calories_unit": meal_log.calories_unit,
+                "total_calories": meal_log.total_calories,
                 "created_on": str(meal_log.created_on),
             },
         )
