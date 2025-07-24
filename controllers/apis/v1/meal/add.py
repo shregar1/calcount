@@ -12,7 +12,7 @@ from constants.api_status import APIStatus
 from dependencies.apis.v1.meal.add import AddMealDependency
 from dependencies.db import DBDependency
 
-from dtos.requests.api.meal.add import AddMealRequestDTO
+from dtos.requests.apis.v1.meal.add import AddMealRequestDTO
 from dtos.responses.base import BaseResponseDTO
 
 from errors.bad_input_error import BadInputError

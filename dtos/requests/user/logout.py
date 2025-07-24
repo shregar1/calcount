@@ -1,6 +1,5 @@
-from pydantic import BaseModel
+from dtos.requests.abstraction import IRequestDTO
 
 
-class UserLogoutRequestDTO(BaseModel):
-
-    reference_number: str
+class UserLogoutRequestDTO(IRequestDTO):
+    pass

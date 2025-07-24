@@ -1,7 +1,5 @@
 from http import HTTPStatus
 
-from abstractions.service import IService
-
 from constants.api_status import APIStatus
 
 from errors.bad_input_error import BadInputError
@@ -12,12 +10,14 @@ from models.user import User
 
 from repositories.user import UserRepository
 
+from services.user.abstraction import IUserService
+
 from start_utils import db_session
 
 from utilities.jwt import JWTUtility
 
 
-class UserLogoutService(IService):
+class UserLogoutService(IUserService):
 
     def __init__(
         self, urn: str = None, user_urn: str = None, api_name: str = None

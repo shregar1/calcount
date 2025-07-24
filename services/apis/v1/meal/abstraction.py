@@ -5,8 +5,6 @@ from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel
 from typing import Dict, List
 
-from abstractions.service import IService
-
 from constants.meal.nutrients import Nutrients
 from constants.meal.prompt.instructions import MealInstructionsPrompt
 
@@ -17,10 +15,12 @@ from errors.bad_input_error import BadInputError
 from errors.not_found_error import NotFoundError
 from errors.unexpected_response_error import UnexpectedResponseError
 
+from services.apis.v1.abstraction import IV1APIService
+
 from start_utils import llm
 
 
-class IMealAPIService(IService):
+class IMealAPIService(IV1APIService):
 
     def __init__(
         self,

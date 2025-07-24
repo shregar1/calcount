@@ -5,6 +5,8 @@ from typing import List
 from models.meal_log import MealLog
 
 from abstractions.repository import IRepository
+from cachetools import LRUCache, cachedmethod
+from operator import attrgetter
 
 
 class MealLogRepository(IRepository):
@@ -24,6 +26,7 @@ class MealLogRepository(IRepository):
 
         if not self.session:
             raise RuntimeError("DB session not found")
+        self._cache = LRUCache(maxsize=128)
 
     def create_record(self, meal_log: MealLog) -> MealLog:
 
@@ -37,6 +40,7 @@ class MealLogRepository(IRepository):
 
         return meal_log
 
+    @cachedmethod(attrgetter('_cache'))
     def retrieve_record_by_urn(
         self, urn: str, is_deleted: bool = False
     ) -> MealLog:
@@ -53,6 +57,7 @@ class MealLogRepository(IRepository):
 
         return record if record else None
 
+    @cachedmethod(attrgetter('_cache'))
     def retrieve_record_by_meal_name(
         self, meal_name: str, is_deleted: bool = False
     ) -> MealLog:
@@ -110,6 +115,7 @@ class MealLogRepository(IRepository):
 
         return records if records else None
 
+    @cachedmethod(attrgetter('_cache'))
     def retrieve_record_by_id(
         self,
         id: str,

@@ -102,65 +102,6 @@ class UserRepository(IRepository):
 
         return record if record else None
 
-    def retrieve_record_by_id_and_is_logged_in(
-        self, id: str, is_logged_in: bool, is_deleted: bool = False
-    ) -> User:
-
-        start_time = datetime.now()
-        records = (
-            self.session.query(User)
-            .filter(
-                User.id == id,
-                User.is_logged_in == is_logged_in,
-                User.is_deleted == is_deleted,
-            )
-            .all()
-        )
-        end_time = datetime.now()
-        execution_time = end_time - start_time
-        self.logger.info(f"Execution time: {execution_time} seconds")
-
-        return records
-
-    def retrieve_record_by_id_is_logged_in(
-        self, id: int, is_logged_in: bool, is_deleted: bool = False
-    ) -> User:
-
-        start_time = datetime.now()
-        record = (
-            self.session.query(User)
-            .filter(
-                User.id == id,
-                User.is_logged_in == is_logged_in,
-                User.is_deleted == is_deleted,
-            )
-            .one_or_none()
-        )
-        end_time = datetime.now()
-        execution_time = end_time - start_time
-        self.logger.info(f"Execution time: {execution_time} seconds")
-
-        return record
-
-    def retrieve_record_by_is_logged_in(
-        self, is_logged_in: bool, is_deleted: bool = False
-    ) -> User:
-
-        start_time = datetime.now()
-        records = (
-            self.session.query(User)
-            .filter(
-                User.is_logged_in == is_logged_in,
-                User.is_deleted == is_deleted,
-            )
-            .all()
-        )
-        end_time = datetime.now()
-        execution_time = end_time - start_time
-        self.logger.info(f"Execution time: {execution_time} seconds")
-
-        return records
-
     def update_record(self, id: str, new_data: dict) -> User:
 
         start_time = datetime.now()

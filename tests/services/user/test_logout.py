@@ -40,7 +40,6 @@ class TestUserLogoutService:
 
         # Act
         result = await self.service.run(logout_data)
-        print(result)
 
         # Assert
         assert result.status == "SUCCESS"

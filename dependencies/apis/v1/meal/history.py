@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Session
 from abstractions.dependency import IDependency
 
-from services.apis.meal.history import FetchMealHistoryService
+from services.apis.v1.meal.history import FetchMealHistoryService
 
 from repositories.meal_log import MealLogRepository
 

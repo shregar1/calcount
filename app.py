@@ -7,6 +7,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from http import HTTPStatus
 from loguru import logger
 
 from controllers.user import router as UserRouter
@@ -25,7 +26,8 @@ PORT = int(os.getenv("PORT"))
 
 @app.exception_handler(RequestValidationError)
 async def validation_exception_handler(request, exc):
-    print(request.state.urn)
+    for error in exc.errors():
+        error.pop("ctx")
     response_payload: dict = {
         "transactionUrn": request.state.urn,
         "responseMessage": "Bad or missing input.",
@@ -33,7 +35,7 @@ async def validation_exception_handler(request, exc):
         "errors": exc.errors(),
     }
     return JSONResponse(
-        status_code=400,
+        status_code=HTTPStatus.BAD_REQUEST,
         content=response_payload,
     )
 
@@ -44,7 +46,7 @@ async def health_check():
 
 
 app.add_middleware(middleware_class=TrustedHostMiddleware, allowed_hosts=["*"])
-origins = ["http://localhost:5173", "*"]
+origins = ["*"]
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,

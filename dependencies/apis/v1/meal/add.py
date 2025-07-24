@@ -2,7 +2,7 @@ from typing import Callable
 
 from abstractions.dependency import IDependency
 
-from services.apis.meal.add import AddMealService
+from services.apis.v1.meal.add import AddMealService
 
 from repositories.meal_log import MealLogRepository
 

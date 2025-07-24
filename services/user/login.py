@@ -3,8 +3,6 @@ import bcrypt
 from datetime import datetime
 from http import HTTPStatus
 
-from abstractions.service import IService
-
 from constants.api_status import APIStatus
 
 from errors.bad_input_error import BadInputError
@@ -17,10 +15,12 @@ from models.user import User
 
 from repositories.user import UserRepository
 
+from services.user.abstraction import IUserService
+
 from utilities.jwt import JWTUtility
 
 
-class UserLoginService(IService):
+class UserLoginService(IUserService):
 
     def __init__(
         self,

@@ -39,11 +39,8 @@ class JWTUtility(IUtility):
     def decode_token(self, token: str) -> Union[Dict[str, str]]:
         try:
 
-            print(token, SECRET_KEY, ALGORITHM)
-
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
             return payload
 
         except PyJWTError as err:
-            print(err)
             raise err

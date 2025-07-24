@@ -5,14 +5,14 @@ from http import HTTPMethod
 
 from constants.api_status import APIStatus
 
-from dtos.requests.api.meal.add import AddMealRequestDTO
+from dtos.requests.apis.v1.meal.add import AddMealRequestDTO
 from dtos.responses.base import BaseResponseDTO
 
 from models.meal_log import MealLog
 
 from repositories.meal_log import MealLogRepository
 
-from services.apis.meal.abstraction import IMealAPIService
+from services.apis.v1.meal.abstraction import IMealAPIService
 
 from start_utils import USDA_API_KEY, usda_configuration
 

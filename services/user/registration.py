@@ -5,8 +5,6 @@ import ulid
 from datetime import datetime
 from http import HTTPStatus
 
-from abstractions.service import IService
-
 from constants.api_status import APIStatus
 
 from dtos.requests.user.registration import UserRegistrationRequestDTO
@@ -18,13 +16,15 @@ from models.user import User
 
 from repositories.user import UserRepository
 
+from services.user.abstraction import IUserService
 
-class UserRegistrationService(IService):
+
+class UserRegistrationService(IUserService):
 
     def __init__(
-        self, 
-        urn: str = None, 
-        user_urn: str = None, 
+        self,
+        urn: str = None,
+        user_urn: str = None,
         api_name: str = None,
         user_id: int = None,
         user_repository: UserRepository = None,
