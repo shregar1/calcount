@@ -15,7 +15,7 @@ from errors.bad_input_error import BadInputError
 from errors.not_found_error import NotFoundError
 from errors.unexpected_response_error import UnexpectedResponseError
 
-from repositories.user import UserRepository
+from repositories.meal_log import MealLogRepository
 
 from services.apis.meal.add import AddMealService
 
@@ -28,7 +28,7 @@ class AddMealController(IController):
 
     def __init__(self, urn: str = None) -> None:
         super().__init__(urn)
-        self.api_name = APILK.LOGIN
+        self.api_name = APILK.ADD_MEAL
 
     async def post(
         self,
@@ -64,7 +64,7 @@ class AddMealController(IController):
                 user_urn=self.user_urn,
                 api_name=self.api_name,
                 user_id=self.user_id,
-                user_repository=UserRepository(
+                meal_log_repository=MealLogRepository(
                     urn=self.urn,
                     user_urn=self.user_urn,
                     api_name=self.api_name,

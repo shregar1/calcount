@@ -9,7 +9,7 @@ from controllers.user.logout import UserLogoutController
 
 from start_utils import logger
 
-router = APIRouter(prefix="")
+router = APIRouter(prefix="/user")
 
 logger.debug(f"Registering {UserLoginController.__name__} route.")
 router.add_api_route(

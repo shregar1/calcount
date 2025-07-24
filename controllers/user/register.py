@@ -48,13 +48,10 @@ class UserRegistrationController(IController):
         try:
 
             self.logger.debug("Validating request")
-            self.request_payload = request_payload.model_dump()
-            self.request_payload.update({"user_id": request.state.user_id})
-
             await self.validate_request(
                 urn=self.urn,
                 user_urn=self.user_urn,
-                request_payload=self.request_payload,
+                request_payload=request_payload.model_dump(),
                 request_headers=dict(request.headers.mutablecopy()),
                 api_name=self.api_name,
                 user_id=self.user_id,
@@ -73,7 +70,7 @@ class UserRegistrationController(IController):
                     api_name=self.api_name,
                     session=db_session,
                 ),
-            ).run(data=self.request_payload)
+            ).run(request_dto=request_payload)
 
             self.logger.debug("Preparing response metadata")
             http_status_code = HTTPStatus.OK

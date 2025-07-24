@@ -1,21 +1,27 @@
 from pydantic import BaseModel, Field
-from typing import List
+from typing import List, Optional
 
 
 class RecipeIngredientDTO(BaseModel):
-    ingredient: str = Field(
+    ingredient: Optional[str] = Field(
         ..., description="Name of the ingredient, e.g., 'onion'."
     )
-    amount: float = Field(
+    amount: Optional[float] = Field(
         ..., description="Amount of the ingredient, e.g., 2.5."
     )
-    unit: str = Field(
+    unit: Optional[str] = Field(
         ..., description="Unit of measurement, e.g., 'cups', 'grams'."
     )
-    preparation: str = Field(
+    preparation: Optional[str] = Field(
         None,
         description=(
             "Preparation details, e.g., 'chopped', 'diced'. "
+        ),
+    )
+    description: Optional[str] = Field(
+        None,
+        description=(
+            "Description of the process step for the ingredient."
         ),
     )
 

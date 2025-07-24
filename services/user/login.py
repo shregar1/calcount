@@ -1,5 +1,4 @@
 import bcrypt
-import os
 
 from datetime import datetime
 from http import HTTPStatus
@@ -11,6 +10,7 @@ from constants.api_status import APIStatus
 from errors.bad_input_error import BadInputError
 from errors.not_found_error import NotFoundError
 
+from dtos.requests.user.login import UserLoginRequestDTO
 from dtos.responses.base import BaseResponseDTO
 
 from models.user import User
@@ -39,12 +39,12 @@ class UserLoginService(IService):
         self.jwt_utility = JWTUtility(urn=self.urn)
         self.user_repository = user_repository
 
-    async def run(self, data: dict) -> dict:
+    async def run(self, request_dto: UserLoginRequestDTO) -> dict:
 
         self.logger.debug("Fetching user")
         user: User = (
             self.user_repository.retrieve_record_by_email(
-                email=data.get("email"),
+                email=request_dto.email,
                 is_deleted=False,
             )
         )
@@ -57,10 +57,10 @@ class UserLoginService(IService):
                 http_status_code=HTTPStatus.NOT_FOUND,
             )
 
-        if user.password != bcrypt.hashpw(
-            data.get("password").encode("utf8"),
-            os.getenv("BCRYPT_SALT").encode("utf8"),
-        ).decode("utf8"):
+        if not bcrypt.checkpw(
+            request_dto.password.encode("utf8"),
+            user.password.encode("utf8"),
+        ):
             raise BadInputError(
                 responseMessage="Incorrect password.",
                 responseKey="error_authorisation_failed",

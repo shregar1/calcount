@@ -7,8 +7,6 @@ from sqlalchemy import (
     Boolean,
     Index,
 )
-from sqlalchemy.dialects.postgresql import BIGSERIAL
-from sqlalchemy.orm import relationship
 
 from constants.db.table import Table
 
@@ -19,7 +17,7 @@ class User(Base):
 
     __tablename__ = Table.USER
 
-    id = Column(BIGSERIAL, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     urn = Column(String, nullable=False, index=True)
     email = Column(String, unique=True, nullable=False, index=True)
     password = Column(String, nullable=False)
@@ -35,9 +33,6 @@ class User(Base):
     created_by = Column(BigInteger, nullable=False)
     updated_on = Column(DateTime(timezone=True))
     updated_by = Column(BigInteger)
-
-    # Relationship to profile
-    profile = relationship("Profile", back_populates="user", uselist=False)
 
 
 Index('ix_user_urn', User.urn)

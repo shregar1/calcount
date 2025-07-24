@@ -10,7 +10,7 @@ from fastapi.responses import JSONResponse
 from loguru import logger
 
 from controllers.user import router as UserRouter
-from controllers.apis.v1 import router as V1APISRouter
+from controllers.apis import router as APISRouter
 
 from middlewares.authetication import AuthenticationMiddleware
 from middlewares.request_context import RequestContextMiddleware
@@ -62,7 +62,7 @@ logger.info("Initialising routers")
 # USER ROUTER
 app.include_router(UserRouter)
 # APIS ROUTER
-app.include_router(V1APISRouter)
+app.include_router(APISRouter)
 logger.info("Initialised routers")
 
 if __name__ == "__main__":

@@ -8,10 +8,8 @@ from sqlalchemy import (
     Index,
     Integer,
     JSON,
-    ForeignKey,
-    Text
+    ForeignKey
 )
-from sqlalchemy.dialects.postgresql import BIGSERIAL
 
 from constants.db.table import Table
 
@@ -23,7 +21,7 @@ class MealLog(Base):
 
     __tablename__ = Table.MEAL_LOG
 
-    id = Column(BIGSERIAL, primary_key=True)
+    id = Column(BigInteger, primary_key=True)
     urn = Column(String, nullable=False, index=True)
     user_id = Column(
         BigInteger,
@@ -36,7 +34,7 @@ class MealLog(Base):
     servings = Column(Integer)
     nutrients = Column(JSON)
     ingredients = Column(JSON)
-    instructions = Column(Text)
+    instructions = Column(JSON)
     is_deleted = Column(Boolean, nullable=False, default=False)
     created_on = Column(
         DateTime(timezone=True),

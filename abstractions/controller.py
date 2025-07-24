@@ -1,6 +1,4 @@
-from abc import ABC, abstractmethod
-from fastapi import Request
-from fastapi.responses import JSONResponse
+from abc import ABC
 
 from start_utils import logger
 
@@ -30,51 +28,3 @@ class IController(ABC):
         self.api_name = api_name
         self.user_id = user_id
         return
-
-    @abstractmethod
-    async def get(
-        self,
-        request: Request,
-        request_payload: dict,
-    ) -> JSONResponse:
-        pass
-
-    @abstractmethod
-    async def post(
-        self,
-        request: Request,
-        request_payload: dict,
-    ) -> JSONResponse:
-        pass
-
-    @abstractmethod
-    async def put(
-        self,
-        request: Request,
-        request_payload: dict,
-    ) -> JSONResponse:
-        pass
-
-    @abstractmethod
-    async def delete(
-        self,
-        request: Request,
-        request_payload: dict,
-    ) -> JSONResponse:
-        pass
-
-    @abstractmethod
-    async def patch(
-        self,
-        request: Request,
-        request_payload: dict,
-    ) -> JSONResponse:
-        pass
-
-    @abstractmethod
-    async def options(
-        self,
-        request: Request,
-        request_payload: dict,
-    ) -> JSONResponse:
-        pass

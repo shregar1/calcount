@@ -1,0 +1,30 @@
+from fastapi import APIRouter
+from http import HTTPMethod
+
+from constants.api_lk import APILK
+
+from controllers.apis.v1.meal.add import AddMealController
+from controllers.apis.v1.meal.fetch import FetchMealController
+
+from start_utils import logger
+
+
+router = APIRouter(prefix="/meal")
+
+logger.debug(f"Registering {AddMealController.__name__} route.")
+router.add_api_route(
+    path="/add",
+    endpoint=AddMealController().post,
+    methods=[HTTPMethod.POST.value],
+    name=APILK.ADD_MEAL,
+)
+logger.debug(f"Registered {AddMealController.__name__} route.")
+
+logger.debug(f"Registering {FetchMealController.__name__} route.")
+router.add_api_route(
+    path="/search",
+    endpoint=FetchMealController().get,
+    methods=[HTTPMethod.GET.value],
+    name=APILK.SEARCH_MEAL,
+)
+logger.debug(f"Registered {FetchMealController.__name__} route.")

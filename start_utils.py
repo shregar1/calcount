@@ -10,8 +10,6 @@ from sqlalchemy.orm import sessionmaker
 from configurations.db import DBConfiguration, DBConfigurationDTO
 from configurations.usda import USDAConfiguration, USDAConfigurationDTO
 
-from models import Base
-
 
 logger.remove(0)
 logger.add(
@@ -57,18 +55,18 @@ engine = create_engine(
 )
 Session = sessionmaker(bind=engine)
 db_session = Session()
-Base.metadata.create_all(engine)
 logger.info("Initialized PostgreSQL database")
 
 llm = ChatGoogleGenerativeAI(
-    model="gemini-1.5-pro-latest",
+    model="gemini-2.5-flash",
     google_api_key=GOOGLE_API_KEY,
 )
 
 unprotected_routes: set = {
     "/health",
-    "/login",
-    "/register",
+    "/user/login",
+    "/user/register",
 }
+callback_routes: set = set()
 
 db_session.commit()

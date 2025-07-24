@@ -10,7 +10,7 @@ services:
   postgres:
     image: postgres:16-alpine
     environment:
-      POSTGRES_USER: calcount
+      POSTGRES_USER: postgres
       POSTGRES_PASSWORD: calcount123
       POSTGRES_DB: calcount
     ports:

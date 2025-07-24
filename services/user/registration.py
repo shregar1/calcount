@@ -9,39 +9,39 @@ from abstractions.service import IService
 
 from constants.api_status import APIStatus
 
-from errors.bad_input_error import BadInputError
-
+from dtos.requests.user.registration import UserRegistrationRequestDTO
 from dtos.responses.base import BaseResponseDTO
+
+from errors.bad_input_error import BadInputError
 
 from models.user import User
 
 from repositories.user import UserRepository
 
-from start_utils import db_session
-
 
 class UserRegistrationService(IService):
 
     def __init__(
-        self, urn: str = None, user_urn: str = None, api_name: str = None
+        self, 
+        urn: str = None, 
+        user_urn: str = None, 
+        api_name: str = None,
+        user_id: int = None,
+        user_repository: UserRepository = None,
     ) -> None:
         super().__init__(urn, user_urn, api_name)
         self.urn = urn
         self.user_urn = user_urn
         self.api_name = api_name
+        self.user_id = user_id
 
-        self.user_repository = UserRepository(
-            urn=self.urn,
-            user_urn=self.user_urn,
-            api_name=self.api_name,
-            session=db_session,
-        )
+        self.user_repository = user_repository
 
-    async def run(self, data: dict) -> dict:
+    async def run(self, request_dto: UserRegistrationRequestDTO) -> dict:
 
         self.logger.debug("Checking if user exists")
         user: User = self.user_repository.retrieve_record_by_email(
-            email=data.get("email")
+            email=request_dto.email
         )
 
         if user:
@@ -56,12 +56,13 @@ class UserRegistrationService(IService):
         self.logger.debug("Preparing user data")
         user: User = User(
             urn=ulid.ulid(),
-            email=data.get("email"),
+            email=request_dto.email,
             password=bcrypt.hashpw(
-                data.get("password").encode("utf-8"),
+                request_dto.password.encode("utf-8"),
                 os.getenv("BCRYPT_SALT").encode("utf8"),
             ).decode("utf8"),
             is_deleted=False,
+            created_by=1,
             created_on=datetime.now(),
         )
 
