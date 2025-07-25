@@ -45,8 +45,10 @@ calcount/
 │   └── regular_expression.py # Regex patterns
 ├── controllers/          # FastAPI route controllers (handle HTTP requests)
 │   ├── apis/             # API versioned controllers (e.g., v1)
-│   │   ├── meal/         # Meal-related endpoints (add, fetch, history, etc.)
-│   │   └── user/         # User-related endpoints (login, register, logout, etc.)
+│   │   ├── v1/           # Version 1 API controllers
+│   │   │   ├── meal/     # Meal-related endpoints (add, fetch, history, etc.)
+│   │   │   └── user/     # User-related endpoints (login, register, logout, etc.)
+│   │   └── ...
 │   └── ...
 ├── dependencies/         # FastAPI dependency providers (e.g., for DI, DB sessions)
 ├── dtos/                 # Data Transfer Objects (request/response schemas)
