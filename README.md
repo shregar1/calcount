@@ -97,7 +97,7 @@ This project uses a modular, versioned routing pattern for its API endpoints:
 - **Example Endpoint Paths:**
   - `/api/v1/meal/add` — Add a new meal log
   - `/api/v1/meal/fetch` — Fetch meal details
-  - `/api/v1/meal/history` — Fetch meal history for a user
+  - `/api/v1/meal/history` — Fetch meal history for a user within a date range
   - `/user/login` — User login
   - `/user/register` — User registration
   - `/user/logout` — User logout
@@ -273,6 +273,13 @@ curl --location 'http://0.0.0.0:8003/api/v1/meal/add' \
     "servings": 2,
     "get_instructions": false
 }'
+```
+
+### Meal History
+```bash
+curl --location 'http://0.0.0.0:8003/api/v1/meal/history?reference_number=13dbf194-4a4b-41c0-bd94-f2b9e2d4b66a&from_date=2025-07-25&to_date=2025-07-25' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: <token>'
 ```
 
 ---
