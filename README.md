@@ -282,6 +282,12 @@ curl --location 'http://0.0.0.0:8003/api/v1/meal/history?reference_number=13dbf1
 --header 'Authorization: <token>'
 ```
 
+### Meal Recommendation
+```bash
+curl --location 'http://0.0.0.0:8003/api/v1/meal/recommendation?reference_number=fcd9499b-8900-4664-9944-03b517415f13&food_category=paleo' \
+--header 'Authorization: <token>'
+```
+
 ---
 
 ## Contributing

@@ -12,4 +12,5 @@ class BaseResponseDTO:
     status: str
     responseMessage: str
     responseKey: str
-    data: Optional[Union[List, Dict]]
+    data: Optional[Union[List, Dict]] = None
+    errors: Optional[Union[List, Dict]] = None

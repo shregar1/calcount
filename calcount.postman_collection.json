@@ -1,0 +1,133 @@
+{
+  "info": {
+    "_postman_id": "calcount-collection-001",
+    "name": "CalCount API Collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Register User",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"reference_number\": \"7ce053af-0e2e-4ae4-93f7-4ce6f7d40086\",\n    \"email\": \"test@gmail.com\",\n    \"password\": \"test@123\"\n}"
+        },
+        "url": {
+          "raw": "http://0.0.0.0:8003/user/register",
+          "protocol": "http",
+          "host": ["0.0.0.0"],
+          "port": "8003",
+          "path": ["user", "register"]
+        }
+      }
+    },
+    {
+      "name": "User Login",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"reference_number\": \"ecc426e3-c81a-470e-808d-3e663d504fa6\",\n    \"email\": \"test@gmail.com\",\n    \"password\": \"test@123\"\n}"
+        },
+        "url": {
+          "raw": "http://0.0.0.0:8003/user/login",
+          "protocol": "http",
+          "host": ["0.0.0.0"],
+          "port": "8003",
+          "path": ["user", "login"]
+        }
+      }
+    },
+    {
+      "name": "Search Meal",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "<token>" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"reference_number\": \"7ce053af-0e2e-4ae4-93f7-4ce6f7d40086\",\n    \"meal_name\": \"chicken biryani\",\n    \"servings\": 2,\n    \"get_instructions\": false\n}"
+        },
+        "url": {
+          "raw": "http://0.0.0.0:8003/api/v1/meal/search",
+          "protocol": "http",
+          "host": ["0.0.0.0"],
+          "port": "8003",
+          "path": ["api", "v1", "meal", "search"]
+        }
+      }
+    },
+    {
+      "name": "Add Meal",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "<token>" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n    \"reference_number\": \"7ce053af-0e2e-4ae4-93f7-4ce6f7d40086\",\n    \"meal_name\": \"chicken biryani\",\n    \"servings\": 2,\n    \"get_instructions\": false\n}"
+        },
+        "url": {
+          "raw": "http://0.0.0.0:8003/api/v1/meal/add",
+          "protocol": "http",
+          "host": ["0.0.0.0"],
+          "port": "8003",
+          "path": ["api", "v1", "meal", "add"]
+        }
+      }
+    },
+    {
+      "name": "Meal History",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "<token>" }
+        ],
+        "url": {
+          "raw": "http://0.0.0.0:8003/api/v1/meal/history?reference_number=13dbf194-4a4b-41c0-bd94-f2b9e2d4b66a&from_date=2025-07-25&to_date=2025-07-25",
+          "protocol": "http",
+          "host": ["0.0.0.0"],
+          "port": "8003",
+          "path": ["api", "v1", "meal", "history"],
+          "query": [
+            { "key": "reference_number", "value": "13dbf194-4a4b-41c0-bd94-f2b9e2d4b66a" },
+            { "key": "from_date", "value": "2025-07-25" },
+            { "key": "to_date", "value": "2025-07-25" }
+          ]
+        }
+      }
+    },
+    {
+      "name": "Meal Recommendation",
+      "request": {
+        "method": "GET",
+        "header": [
+          { "key": "Authorization", "value": "<token>" }
+        ],
+        "url": {
+          "raw": "http://0.0.0.0:8003/api/v1/meal/recommendation?reference_number=fcd9499b-8900-4664-9944-03b517415f13&food_category=paleo",
+          "protocol": "http",
+          "host": ["0.0.0.0"],
+          "port": "8003",
+          "path": ["api", "v1", "meal", "recommendation"],
+          "query": [
+            { "key": "reference_number", "value": "fcd9499b-8900-4664-9944-03b517415f13" },
+            { "key": "food_category", "value": "paleo" }
+          ]
+        }
+      }
+    }
+  ]
+} 

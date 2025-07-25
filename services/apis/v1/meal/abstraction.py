@@ -1,15 +1,18 @@
+import json
 import requests
 
 from http import HTTPStatus, HTTPMethod
 from langchain.output_parsers import PydanticOutputParser
 from pydantic import BaseModel
-from typing import Dict, List
+from typing import Any, Dict, List
 
 from constants.meal.nutrients import Nutrients
 from constants.meal.prompt.instructions import MealInstructionsPrompt
+from constants.meal.prompt.recommendation import MealRecommendationPrompt
 
 from dtos.responses.base import BaseResponseDTO
 from dtos.service.api.meal.instructions import InstructionsDTO
+from dtos.service.api.meal.recommendation import MealRecommendationDTO
 
 from errors.bad_input_error import BadInputError
 from errors.not_found_error import NotFoundError
@@ -143,6 +146,21 @@ class IMealAPIService(IV1APIService):
         )
         llm_response = llm.invoke(prompt)
         response: InstructionsDTO = parser.parse(llm_response.content)
+        return response
+
+    def generate_meal_recommendation(
+        self,
+        food_category: str,
+        meal_history: List[Dict[str, Any]]
+    ) -> MealRecommendationDTO:
+
+        parser = PydanticOutputParser(pydantic_object=MealRecommendationDTO)
+        prompt = MealRecommendationPrompt.MEAL_RECOMMENDATION_PROMPT.format(
+            food_category=food_category,
+            past_meals_json=json.dumps(meal_history)
+        )
+        llm_response = llm.invoke(prompt)
+        response: MealRecommendationDTO = parser.parse(llm_response.content)
         return response
 
     def extract_essential_nutrients(
