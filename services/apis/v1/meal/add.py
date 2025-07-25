@@ -18,7 +18,7 @@ from start_utils import USDA_API_KEY, usda_configuration
 
 
 class AddMealService(IMealAPIService):
-    
+
     def __init__(
         self,
         urn: str = None,

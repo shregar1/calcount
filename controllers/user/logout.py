@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from http import HTTPStatus
 from sqlalchemy.orm import Session
 from typing import Callable
+from loguru import logger
 
 from abstractions.controller import IController
 
@@ -10,7 +11,10 @@ from constants.api_lk import APILK
 from constants.api_status import APIStatus
 
 from dependencies.db import DBDependency
-from dependencies.user.logout import UserLogoutDependency
+from dependencies.repositiories.user import UserRepositoryDependency
+from dependencies.services.user.logout import UserLogoutServiceDependency
+from dependencies.utilities.dictionary import DictionaryUtilityDependency
+from dependencies.utilities.jwt import JWTUtilityDependency
 
 from dtos.requests.user.logout import UserLogoutRequestDTO
 from dtos.responses.base import BaseResponseDTO
@@ -18,20 +22,27 @@ from dtos.responses.base import BaseResponseDTO
 from errors.bad_input_error import BadInputError
 from errors.not_found_error import NotFoundError
 from errors.unexpected_response_error import UnexpectedResponseError
-
+from repositories.user import UserRepository
 from utilities.dictionary import DictionaryUtility
+from utilities.jwt import JWTUtility
 
 
 class UserLogoutController(IController):
 
-    def __init__(self, urn: str = None) -> None:
+    def __init__(
+        self,
+        urn: str = None,
+        user_urn: str = None,
+        api_name: str = None,
+        user_id: str = None,
+    ) -> None:
         super().__init__(urn)
-        self._urn = urn
-        self._user_urn = None
-        self._api_name = APILK.LOGOUT
-        self._user_id = None
-        self._logger = self.logger
-        self._dictionary_utility = None
+        self._urn: str = urn
+        self._user_urn: str = user_urn
+        self._api_name: str = APILK.LOGOUT
+        self._user_id: str = user_id
+        self._logger: logger = self.logger
+        self._dictionary_utility: DictionaryUtility = None
 
     @property
     def urn(self):
@@ -86,20 +97,51 @@ class UserLogoutController(IController):
         request: Request,
         request_payload: UserLogoutRequestDTO,
         session: Session = Depends(DBDependency.derive),
+        user_repository: UserRepository = Depends(
+            UserRepositoryDependency.derive
+        ),
         user_logout_service_factory: Callable = Depends(
-            UserLogoutDependency.derive
+            UserLogoutServiceDependency.derive
+        ),
+        dictionary_utility: DictionaryUtility = Depends(
+            DictionaryUtilityDependency.derive
+        ),
+        jwt_utility: JWTUtility = Depends(
+            JWTUtilityDependency.derive
         )
     ) -> JSONResponse:
 
         self.logger.debug("Fetching request URN")
-        self.urn = request.state.urn
-        self.user_id = getattr(request.state, "user_id", None)
-        self.user_urn = getattr(request.state, "user_urn", None)
-        self.logger = self.logger.bind(
-            urn=self.urn, user_urn=self.user_urn, api_name=self.api_name
+        self.urn: str = request.state.urn
+        self.user_id: str = getattr(request.state, "user_id", None)
+        self.user_urn: str = getattr(request.state, "user_urn", None)
+        self.logger: logger = self.logger.bind(
+            urn=self.urn,
+            user_urn=self.user_urn,
+            api_name=self.api_name,
+            user_id=self.user_id,
         )
-        self.dictionary_utility = DictionaryUtility(urn=self.urn)
-
+        self.dictionary_utility: DictionaryUtility = (
+            dictionary_utility(
+                urn=self.urn,
+                user_urn=self.user_urn,
+                api_name=self.api_name,
+                user_id=self.user_id,
+            )
+        )
+        self.jwt_utility: JWTUtility = jwt_utility(
+            urn=self.urn,
+            user_urn=self.user_urn,
+            api_name=self.api_name,
+            user_id=self.user_id,
+        )
+        self.user_repository = user_repository(
+            urn=self.urn,
+            user_urn=self.user_urn,
+            api_name=self.api_name,
+            user_id=self.user_id,
+            session=session,
+        )
         try:
 
             self.logger.debug("Validating request")
@@ -122,8 +164,9 @@ class UserLogoutController(IController):
                 user_urn=self.user_urn,
                 api_name=self.api_name,
                 user_id=self.user_id,
-                session=session,
-            ).run(data=self.request_payload)
+                jwt_utility=self.jwt_utility,
+                user_repository=self.user_repository,
+            ).run()
 
             self.logger.debug("Preparing response metadata")
             http_status_code = HTTPStatus.OK
@@ -163,5 +206,8 @@ class UserLogoutController(IController):
             self.logger.debug("Prepared response metadata")
 
         return JSONResponse(
-            content=response_dto.to_dict(), status_code=http_status_code
+            content=self.dictionary_utility.convert_dict_keys_to_camel_case(
+                response_dto.to_dict()
+            ),
+            status_code=http_status_code,
         )

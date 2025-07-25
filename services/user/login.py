@@ -29,6 +29,7 @@ class UserLoginService(IUserService):
         api_name: str = None,
         user_id: int = None,
         user_repository: UserRepository = None,
+        jwt_utility: JWTUtility = None,
     ) -> None:
         super().__init__(urn, user_urn, api_name)
         self._urn = urn
@@ -36,7 +37,7 @@ class UserLoginService(IUserService):
         self._api_name = api_name
         self._user_id = user_id
         self._user_repository = user_repository
-        self._jwt_utility = JWTUtility(urn=self._urn)
+        self._jwt_utility = jwt_utility
 
     @property
     def urn(self):

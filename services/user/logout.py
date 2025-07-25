@@ -12,27 +12,27 @@ from repositories.user import UserRepository
 
 from services.user.abstraction import IUserService
 
-from start_utils import db_session
-
 from utilities.jwt import JWTUtility
 
 
 class UserLogoutService(IUserService):
 
     def __init__(
-        self, urn: str = None, user_urn: str = None, api_name: str = None
+        self,
+        urn: str = None,
+        user_urn: str = None,
+        api_name: str = None,
+        user_id: int = None,
+        user_repository: UserRepository = None,
+        jwt_utility: JWTUtility = None,
     ) -> None:
         super().__init__(urn, user_urn, api_name)
         self._urn = urn
         self._user_urn = user_urn
         self._api_name = api_name
-        self._user_repository = UserRepository(
-            urn=self._urn,
-            user_urn=self._user_urn,
-            api_name=self._api_name,
-            session=db_session,
-        )
-        self._jwt_utility = JWTUtility(urn=self._urn)
+        self._user_id = user_id
+        self._user_repository = user_repository
+        self._jwt_utility = jwt_utility
 
     @property
     def urn(self):
@@ -59,6 +59,14 @@ class UserLogoutService(IUserService):
         self._api_name = value
 
     @property
+    def user_id(self):
+        return self._user_id
+
+    @user_id.setter
+    def user_id(self, value):
+        self._user_id = value
+
+    @property
     def user_repository(self):
         return self._user_repository
 
@@ -74,11 +82,11 @@ class UserLogoutService(IUserService):
     def jwt_utility(self, value):
         self._jwt_utility = value
 
-    async def run(self, data: dict) -> dict:
+    async def run(self) -> dict:
 
         self.logger.debug("Fetching user")
         user: User = self.user_repository.retrieve_record_by_id_is_logged_in(
-            id=data.get("user_id"), is_logged_in=True
+            id=self.user_id, is_logged_in=True
         )
         self.logger.debug("Fetched user")
 

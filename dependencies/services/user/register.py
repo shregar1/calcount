@@ -4,12 +4,8 @@ from abstractions.dependency import IDependency
 
 from services.user.registration import UserRegistrationService
 
-from repositories.user import UserRepository
 
-from start_utils import db_session
-
-
-class UserRegistrationDependency(IDependency):
+class UserRegistrationServiceDependency(IDependency):
 
     @staticmethod
     def derive() -> Callable:
@@ -18,18 +14,13 @@ class UserRegistrationDependency(IDependency):
             user_urn,
             api_name,
             user_id,
-            session=db_session,
+            user_repository,
         ):
             return UserRegistrationService(
                 urn=urn,
                 user_urn=user_urn,
                 api_name=api_name,
                 user_id=user_id,
-                user_repository=UserRepository(
-                    urn=urn,
-                    user_urn=user_urn,
-                    api_name=api_name,
-                    session=session,
-                ),
+                user_repository=user_repository,
             )
         return factory

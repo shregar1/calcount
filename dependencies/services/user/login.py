@@ -4,12 +4,8 @@ from abstractions.dependency import IDependency
 
 from services.user.login import UserLoginService
 
-from repositories.user import UserRepository
 
-from start_utils import db_session
-
-
-class UserLoginDependency(IDependency):
+class UserLoginServiceDependency(IDependency):
 
     @staticmethod
     def derive() -> Callable:
@@ -18,18 +14,15 @@ class UserLoginDependency(IDependency):
             user_urn,
             api_name,
             user_id,
-            session=db_session,
+            jwt_utility,
+            user_repository,
         ):
             return UserLoginService(
                 urn=urn,
                 user_urn=user_urn,
                 api_name=api_name,
                 user_id=user_id,
-                user_repository=UserRepository(
-                    urn=urn,
-                    user_urn=user_urn,
-                    api_name=api_name,
-                    session=session,
-                ),
+                user_repository=user_repository,
+                jwt_utility=jwt_utility,
             )
         return factory

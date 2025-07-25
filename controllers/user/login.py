@@ -10,7 +10,10 @@ from constants.api_lk import APILK
 from constants.api_status import APIStatus
 
 from dependencies.db import DBDependency
-from dependencies.user.login import UserLoginDependency
+from dependencies.repositiories.user import UserRepositoryDependency
+from dependencies.services.user.login import UserLoginServiceDependency
+from dependencies.utilities.dictionary import DictionaryUtilityDependency
+from dependencies.utilities.jwt import JWTUtilityDependency
 
 from dtos.requests.user.login import UserLoginRequestDTO
 from dtos.responses.base import BaseResponseDTO
@@ -19,7 +22,9 @@ from errors.bad_input_error import BadInputError
 from errors.not_found_error import NotFoundError
 from errors.unexpected_response_error import UnexpectedResponseError
 
+from repositories.user import UserRepository
 from utilities.dictionary import DictionaryUtility
+from utilities.jwt import JWTUtility
 
 
 class UserLoginController(IController):
@@ -32,6 +37,7 @@ class UserLoginController(IController):
         self._user_id = None
         self._logger = self.logger
         self._dictionary_utility = None
+        self._jwt_utility = None
 
     @property
     def urn(self):
@@ -81,13 +87,30 @@ class UserLoginController(IController):
     def dictionary_utility(self, value):
         self._dictionary_utility = value
 
+    @property
+    def jwt_utility(self):
+        return self._jwt_utility
+
+    @jwt_utility.setter
+    def jwt_utility(self, value):
+        self._jwt_utility = value
+
     async def post(
         self,
         request: Request,
         request_payload: UserLoginRequestDTO,
         session: Session = Depends(DBDependency.derive),
+        user_repository: UserRepository = Depends(
+            UserRepositoryDependency.derive
+        ),
         user_login_service_factory: Callable = Depends(
-            UserLoginDependency.derive
+            UserLoginServiceDependency.derive
+        ),
+        dictionary_utility: DictionaryUtility = Depends(
+            DictionaryUtilityDependency.derive
+        ),
+        jwt_utility: JWTUtility = Depends(
+            JWTUtilityDependency.derive
         )
     ) -> JSONResponse:
 
@@ -98,7 +121,27 @@ class UserLoginController(IController):
         self.logger = self.logger.bind(
             urn=self.urn, user_urn=self.user_urn, api_name=self.api_name
         )
-        self.dictionary_utility = DictionaryUtility(urn=self.urn)
+        self.dictionary_utility: DictionaryUtility = (
+            dictionary_utility(
+                urn=self.urn,
+                user_urn=self.user_urn,
+                api_name=self.api_name,
+                user_id=self.user_id,
+            )
+        )
+        self.jwt_utility: JWTUtility = jwt_utility(
+            urn=self.urn,
+            user_urn=self.user_urn,
+            api_name=self.api_name,
+            user_id=self.user_id,
+        )
+        self.user_repository: UserRepository = user_repository(
+            urn=self.urn,
+            user_urn=self.user_urn,
+            api_name=self.api_name,
+            user_id=self.user_id,
+            session=session,
+        )
 
         try:
 
@@ -119,7 +162,8 @@ class UserLoginController(IController):
                 user_urn=self.user_urn,
                 api_name=self.api_name,
                 user_id=self.user_id,
-                session=session,
+                jwt_utility=self.jwt_utility,
+                user_repository=self.user_repository,
             ).run(request_dto=request_payload)
 
             self.logger.debug("Preparing response metadata")
@@ -160,5 +204,8 @@ class UserLoginController(IController):
             self.logger.debug("Prepared response metadata")
 
         return JSONResponse(
-            content=response_dto.to_dict(), status_code=http_status_code
+            content=self.dictionary_utility.convert_dict_keys_to_camel_case(
+                response_dto.to_dict()
+            ),
+            status_code=http_status_code,
         )

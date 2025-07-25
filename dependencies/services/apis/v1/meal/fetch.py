@@ -4,12 +4,8 @@ from abstractions.dependency import IDependency
 
 from services.apis.v1.meal.fetch import FetchMealService
 
-from repositories.meal_log import MealLogRepository
 
-from start_utils import db_session
-
-
-class FetchMealDependency(IDependency):
+class FetchMealServiceDependency(IDependency):
 
     @staticmethod
     def derive() -> Callable:
@@ -18,18 +14,13 @@ class FetchMealDependency(IDependency):
             user_urn,
             api_name,
             user_id,
-            session=db_session
+            meal_log_repository,
         ):
             return FetchMealService(
                 urn=urn,
                 user_urn=user_urn,
                 api_name=api_name,
                 user_id=user_id,
-                meal_log_repository=MealLogRepository(
-                    urn=urn,
-                    user_urn=user_urn,
-                    api_name=api_name,
-                    session=session,
-                ),
+                meal_log_repository=meal_log_repository,
             )
         return factory
