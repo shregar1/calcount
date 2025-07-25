@@ -65,5 +65,5 @@ class IService(ABC):
         self._logger = value
 
     @abstractmethod
-    def run(self, data: BaseModel) -> dict:
+    def run(self, request_dto: BaseModel) -> dict:
         pass
