@@ -97,13 +97,13 @@ class AddMealController(IController):
         request: Request,
         request_payload: AddMealRequestDTO,
         session: Session = Depends(DBDependency.derive),
-        meal_log_repository: MealLogRepository = Depends(
+        meal_log_repository: Callable = Depends(
             MealLogRepositoryDependency.derive
         ),
-        add_meal_service_factory: Callable = (
-            Depends(AddMealServiceDependency.derive),
+        add_meal_service_factory: Callable = Depends(
+            AddMealServiceDependency.derive
         ),
-        dictionary_utility: DictionaryUtility = Depends(
+        dictionary_utility: Callable = Depends(
             DictionaryUtilityDependency.derive
         ),
     ) -> JSONResponse:

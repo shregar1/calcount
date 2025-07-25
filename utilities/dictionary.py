@@ -1,6 +1,5 @@
 import re
 
-from loguru import logger
 from typing import List
 
 from abstractions.utility import IUtility
@@ -8,10 +7,23 @@ from abstractions.utility import IUtility
 
 class DictionaryUtility(IUtility):
 
-    def __init__(self, urn: str = None) -> None:
-        super().__init__(urn)
-        self.urn = urn
-        self.logger = logger
+    def __init__(
+        self,
+        urn: str = None,
+        user_urn: str = None,
+        api_name: str = None,
+        user_id: str = None,
+    ) -> None:
+        super().__init__(
+            urn=urn,
+            user_urn=user_urn,
+            api_name=api_name,
+            user_id=user_id,
+        )
+        self._urn: str = urn
+        self._user_urn: str = user_urn
+        self._api_name: str = api_name
+        self._user_id: str = user_id
 
     def build_dictonary_with_key(self, records: List, key: str):
 

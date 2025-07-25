@@ -14,12 +14,22 @@ class UserRepository(IRepository):
         user_urn: str = None,
         api_name: str = None,
         session: Session = None,
+        user_id: str = None,
     ):
-        super().__init__(urn, user_urn, api_name)
+        self._cache = None
+        super().__init__(
+            urn=urn,
+            user_urn=user_urn,
+            api_name=api_name,
+            user_id=user_id,
+            cache=self._cache,
+            model=User,
+        )
         self._urn = urn
         self._user_urn = user_urn
         self._api_name = api_name
         self._session = session
+        self._user_id = user_id
         if not self._session:
             raise RuntimeError("DB session not found")
 
@@ -57,20 +67,13 @@ class UserRepository(IRepository):
             raise ValueError("session must be a SQLAlchemy Session instance")
         self._session = value
 
-    def create_record(
-        self,
-        user: User,
-    ) -> User:
+    @property
+    def user_id(self):
+        return self._user_id
 
-        start_time = datetime.now()
-        self._session.add(user)
-        self._session.commit()
-
-        end_time = datetime.now()
-        execution_time = end_time - start_time
-        self.logger.info(f"Execution time: {execution_time} seconds")
-
-        return user
+    @user_id.setter
+    def user_id(self, value):
+        self._user_id = value
 
     def retrieve_record_by_email_and_password(
         self,
@@ -81,11 +84,11 @@ class UserRepository(IRepository):
 
         start_time = datetime.now()
         record = (
-            self._session.query(User)
+            self.session.query(self.model)
             .filter(
-                User.email == email,
-                User.password == password,
-                User.is_deleted == is_deleted,
+                self.model.email == email,
+                self.model.password == password,
+                self.model.is_deleted == is_deleted,
             )
             .first()
         )
@@ -103,44 +106,11 @@ class UserRepository(IRepository):
 
         start_time = datetime.now()
         record = (
-            self._session.query(User)
-            .filter(User.email == email, User.is_deleted == is_deleted)
-            .first()
-        )
-        end_time = datetime.now()
-        execution_time = end_time - start_time
-        self.logger.info(f"Execution time: {execution_time} seconds")
-
-        return record if record else None
-
-    def retrieve_record_by_id(
-        self,
-        id: str,
-        is_deleted: bool = False,
-    ) -> User:
-
-        start_time = datetime.now()
-        record = (
-            self._session.query(User)
-            .filter(User.id == id, User.is_deleted == is_deleted)
-            .first()
-        )
-        end_time = datetime.now()
-        execution_time = end_time - start_time
-        self.logger.info(f"Execution time: {execution_time} seconds")
-
-        return record if record else None
-
-    def retrieve_record_by_urn(
-        self,
-        urn: str,
-        is_deleted: bool = False,
-    ) -> User:
-
-        start_time = datetime.now()
-        record = (
-            self._session.query(User)
-            .filter(User.urn == urn, User.is_deleted == is_deleted)
+            self.session.query(self.model)
+            .filter(
+                self.model.email == email,
+                self.model.is_deleted == is_deleted,
+            )
             .first()
         )
         end_time = datetime.now()
@@ -158,11 +128,11 @@ class UserRepository(IRepository):
 
         start_time = datetime.now()
         records = (
-            self._session.query(User)
+            self.session.query(self.model)
             .filter(
-                User.id == id,
-                User.is_logged_in == is_logged_in,
-                User.is_deleted == is_deleted,
+                self.model.id == id,
+                self.model.is_logged_in == is_logged_in,
+                self.model.is_deleted == is_deleted,
             )
             .all()
         )
@@ -181,11 +151,11 @@ class UserRepository(IRepository):
 
         start_time = datetime.now()
         record = (
-            self._session.query(User)
+            self.session.query(self.model)
             .filter(
-                User.id == id,
-                User.is_logged_in == is_logged_in,
-                User.is_deleted == is_deleted,
+                self.model.id == id,
+                self.model.is_logged_in == is_logged_in,
+                self.model.is_deleted == is_deleted,
             )
             .one_or_none()
         )
@@ -194,25 +164,3 @@ class UserRepository(IRepository):
         self.logger.info(f"Execution time: {execution_time} seconds")
 
         return record
-
-    def update_record(
-        self,
-        id: str,
-        new_data: dict,
-    ) -> User:
-
-        start_time = datetime.now()
-        user = self._session.query(User).filter(User.id == id).first()
-
-        if not user:
-            raise ValueError(f"User with id {id} not found")
-
-        for attr, value in new_data.items():
-            setattr(user, attr, value)
-
-        self._session.commit()
-        end_time = datetime.now()
-        execution_time = end_time - start_time
-        self.logger.info(f"Execution time: {execution_time} seconds")
-
-        return user

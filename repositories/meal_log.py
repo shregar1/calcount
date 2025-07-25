@@ -18,15 +18,24 @@ class MealLogRepository(IRepository):
         user_urn: str = None,
         api_name: str = None,
         session: Session = None,
+        user_id: str = None,
     ):
-        super().__init__(urn, user_urn, api_name)
+        self._cache = LRUCache(maxsize=128)
+        super().__init__(
+            urn=urn,
+            user_urn=user_urn,
+            api_name=api_name,
+            user_id=user_id,
+            cache=self._cache,
+            model=MealLog,
+        )
         self._urn = urn
         self._user_urn = user_urn
         self._api_name = api_name
         self._session = session
+        self._user_id = user_id
         if not self._session:
             raise RuntimeError("DB session not found")
-        self._cache = LRUCache(maxsize=128)
 
     @property
     def urn(self):
@@ -62,39 +71,13 @@ class MealLogRepository(IRepository):
             raise ValueError("session must be a SQLAlchemy Session instance")
         self._session = value
 
-    def create_record(
-        self,
-        meal_log: MealLog,
-    ) -> MealLog:
+    @property
+    def user_id(self):
+        return self._user_id
 
-        start_time = datetime.now()
-        self._session.add(meal_log)
-        self._session.commit()
-
-        end_time = datetime.now()
-        execution_time = end_time - start_time
-        self.logger.info(f"Execution time: {execution_time} seconds")
-
-        return meal_log
-
-    @cachedmethod(attrgetter('_cache'))
-    def retrieve_record_by_urn(
-        self,
-        urn: str,
-        is_deleted: bool = False,
-    ) -> MealLog:
-
-        start_time = datetime.now()
-        record = (
-            self._session.query(MealLog)
-            .filter(MealLog.urn == urn, MealLog.is_deleted == is_deleted)
-            .first()
-        )
-        end_time = datetime.now()
-        execution_time = end_time - start_time
-        self.logger.info(f"Execution time: {execution_time} seconds")
-
-        return record if record else None
+    @user_id.setter
+    def user_id(self, value):
+        self._user_id = value
 
     @cachedmethod(attrgetter('_cache'))
     def retrieve_record_by_meal_name(
@@ -105,10 +88,10 @@ class MealLogRepository(IRepository):
 
         start_time = datetime.now()
         record = (
-            self._session.query(MealLog)
+            self._session.query(self.model)
             .filter(
-                MealLog.meal_name == meal_name,
-                MealLog.is_deleted == is_deleted
+                self.model.meal_name == meal_name,
+                self.model.is_deleted == is_deleted
             )
             .first()
         )
@@ -126,10 +109,10 @@ class MealLogRepository(IRepository):
 
         start_time = datetime.now()
         records = (
-            self._session.query(MealLog)
+            self._session.query(self.model)
             .filter(
-                MealLog.user_id == user_id,
-                MealLog.is_deleted == is_deleted
+                self.model.user_id == user_id,
+                self.model.is_deleted == is_deleted
             )
             .all()
         )
@@ -147,11 +130,11 @@ class MealLogRepository(IRepository):
     ) -> List[MealLog]:
         start_time = datetime.now()
         records = (
-            self._session.query(MealLog)
+            self._session.query(self.model)
             .filter(
-                MealLog.user_id == user_id,
-                MealLog.date == date,
-                MealLog.is_deleted == is_deleted
+                self.model.user_id == user_id,
+                self.model.date == date,
+                self.model.is_deleted == is_deleted
             )
             .all()
         )
@@ -160,50 +143,6 @@ class MealLogRepository(IRepository):
         self.logger.info(f"Execution time: {execution_time} seconds")
 
         return records if records else None
-
-    @cachedmethod(attrgetter('_cache'))
-    def retrieve_record_by_id(
-        self,
-        id: str,
-        is_deleted: bool = False
-    ) -> MealLog:
-        start_time = datetime.now()
-        record = (
-            self._session.query(MealLog)
-            .filter(MealLog.id == id, MealLog.is_deleted == is_deleted)
-            .first()
-        )
-        end_time = datetime.now()
-        execution_time = end_time - start_time
-        self.logger.info(f"Execution time: {execution_time} seconds")
-
-        return record if record else None
-
-    def update_record(
-        self,
-        id: str,
-        new_data: dict,
-    ) -> MealLog:
-
-        start_time = datetime.now()
-        meal_log = (
-            self._session.query(MealLog)
-            .filter(MealLog.id == id)
-            .first()
-        )
-
-        if not meal_log:
-            raise ValueError(f"MealLog with id {id} not found")
-
-        for attr, value in new_data.items():
-            setattr(meal_log, attr, value)
-
-        self._session.commit()
-        end_time = datetime.now()
-        execution_time = end_time - start_time
-        self.logger.info(f"Execution time: {execution_time} seconds")
-
-        return meal_log
 
     def retrieve_record_by_fuzzy_meal_name(
         self,
@@ -215,8 +154,8 @@ class MealLogRepository(IRepository):
         Retrieve the closest matching meal log by fuzzy meal name.
         """
         all_meals = (
-            self._session.query(MealLog)
-            .filter(MealLog.is_deleted == is_deleted)
+            self._session.query(self.model)
+            .filter(self.model.is_deleted == is_deleted)
             .all()
         )
         meal_names = [meal.meal_name for meal in all_meals]

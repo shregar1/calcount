@@ -12,11 +12,13 @@ class MealLogRepositoryDependency:
             user_urn,
             api_name,
             session,
+            user_id,
         ):
             return MealLogRepository(
                 urn=urn,
                 user_urn=user_urn,
                 api_name=api_name,
                 session=session,
+                user_id=user_id,
             )
         return factory

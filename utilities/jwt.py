@@ -7,7 +7,6 @@ from typing import Dict, Union
 from abstractions.utility import IUtility
 
 from start_utils import (
-    logger,
     SECRET_KEY,
     ALGORITHM,
     ACCESS_TOKEN_EXPIRE_MINUTES,
@@ -16,10 +15,55 @@ from start_utils import (
 
 class JWTUtility(IUtility):
 
-    def __init__(self, urn: str = None) -> None:
-        super().__init__(urn)
-        self.urn = urn
-        self.logger = logger
+    def __init__(
+        self,
+        urn: str = None,
+        user_urn: str = None,
+        api_name: str = None,
+        user_id: str = None,
+    ) -> None:
+        super().__init__(
+            urn=urn,
+            user_urn=user_urn,
+            api_name=api_name,
+            user_id=user_id,
+        )
+        self._urn: str = urn
+        self._user_urn: str = user_urn
+        self._api_name: str = api_name
+        self._user_id: str = user_id
+
+    @property
+    def urn(self):
+        return self._urn
+
+    @urn.setter
+    def urn(self, value):
+        self._urn = value
+
+    @property
+    def user_urn(self):
+        return self._user_urn
+
+    @user_urn.setter
+    def user_urn(self, value):
+        self._user_urn = value
+
+    @property
+    def api_name(self):
+        return self._api_name
+
+    @api_name.setter
+    def api_name(self, value):
+        self._api_name = value
+
+    @property
+    def user_id(self):
+        return self._user_id
+
+    @user_id.setter
+    def user_id(self, value):
+        self._user_id = value
 
     def create_access_token(self, data: dict) -> str:
 

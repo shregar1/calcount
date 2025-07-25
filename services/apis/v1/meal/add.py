@@ -118,7 +118,7 @@ class AddMealService(IMealAPIService):
             created_by=self.user_id
         )
         meal_log: MealLog = self.meal_log_repository.create_record(
-            meal_log=meal_log
+            record=meal_log
         )
         self.logger.info("Meal added")
 

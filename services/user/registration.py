@@ -105,7 +105,7 @@ class UserRegistrationService(IUserService):
             created_on=datetime.now(),
         )
 
-        user: User = self.user_repository.create_record(user=user)
+        user: User = self.user_repository.create_record(record=user)
         self.logger.debug("Preparing user data")
 
         return BaseResponseDTO(
