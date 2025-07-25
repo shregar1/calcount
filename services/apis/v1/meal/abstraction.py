@@ -104,6 +104,9 @@ class IMealAPIService(IV1APIService):
             otherwise None.
         """
 
+        if len(data) == 0:
+            return None
+
         for food_item in data:
             has_ingredients = (
                 food_item.get('finalFoodInputFoods')
@@ -125,7 +128,7 @@ class IMealAPIService(IV1APIService):
             "No food record found with both non-empty"
             "ingredients and nutrients. Returning None."
         )
-        return None
+        return data[0]
 
     def generate_instructions(
         self,
@@ -266,7 +269,7 @@ class IMealAPIService(IV1APIService):
             raise NotFoundError(
                 responseMessage="No meal data found",
                 responseKey="error_no_meal_data_found",
-                http_status_code=HTTPStatus.BAD_REQUEST,
+                http_status_code=HTTPStatus.NOT_FOUND,
             )
 
         total_calories, calories_unit = self.calculate_total_calories(

@@ -1,4 +1,5 @@
-from fastapi import Request, Depends
+from datetime import date
+from fastapi import Query, Request, Depends
 from fastapi.responses import JSONResponse
 from http import HTTPStatus
 from loguru import logger
@@ -17,7 +18,7 @@ from dependencies.services.apis.v1.meal.history import (
 )
 from dependencies.utilities.dictionary import DictionaryUtilityDependency
 
-from dtos.requests.apis.v1.meal.fetch import FetchMealRequestDTO
+from dtos.requests.apis.v1.meal.history import FetchMealHistoryRequestDTO
 from dtos.responses.base import BaseResponseDTO
 
 from errors.bad_input_error import BadInputError
@@ -40,7 +41,7 @@ class FetchMealHistoryController(IController):
         super().__init__(urn)
         self._urn: str = urn
         self._user_urn: str = user_urn
-        self._api_name: str = APILK.SEARCH_MEAL
+        self._api_name: str = APILK.MEAL_HISTORY
         self._user_id: str = user_id
         self._logger: logger = self.logger
         self._dictionary_utility: DictionaryUtility = None
@@ -96,7 +97,21 @@ class FetchMealHistoryController(IController):
     async def get(
         self,
         request: Request,
-        request_payload: FetchMealRequestDTO,
+        reference_number: str = Query(
+            default=None,
+            description="The reference number",
+            alias="reference_number",
+        ),
+        from_date: date = Query(
+            default=date.today(),
+            description="The from date",
+            alias="from_date",
+        ),
+        to_date: date = Query(
+            default=date.today(),
+            description="The to date",
+            alias="to_date",
+        ),
         session: Session = Depends(DBDependency.derive),
         meal_log_repository: MealLogRepository = Depends(
             MealLogRepositoryDependency.derive
@@ -113,6 +128,15 @@ class FetchMealHistoryController(IController):
         self.urn: str = request.state.urn
         self.user_id: str = getattr(request.state, "user_id", None)
         self.user_urn: str = getattr(request.state, "user_urn", None)
+
+        self.logger.debug("Validating request payload")
+        request_payload = FetchMealHistoryRequestDTO(
+            reference_number=reference_number,
+            from_date=from_date,
+            to_date=to_date,
+        )
+        self.logger.debug("Request payload validated")
+
         self.logger: logger = self.logger.bind(
             urn=self.urn,
             user_urn=self.user_urn,

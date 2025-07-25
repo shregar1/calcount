@@ -5,6 +5,7 @@ from constants.api_lk import APILK
 
 from controllers.apis.v1.meal.add import AddMealController
 from controllers.apis.v1.meal.fetch import FetchMealController
+from controllers.apis.v1.meal.history import FetchMealHistoryController
 
 from start_utils import logger
 
@@ -28,3 +29,12 @@ router.add_api_route(
     name=APILK.SEARCH_MEAL,
 )
 logger.debug(f"Registered {FetchMealController.__name__} route.")
+
+logger.debug(f"Registering {FetchMealHistoryController.__name__} route.")
+router.add_api_route(
+    path="/history",
+    endpoint=FetchMealHistoryController().get,
+    methods=[HTTPMethod.GET.value],
+    name=APILK.MEAL_HISTORY,
+)
+logger.debug(f"Registered {FetchMealHistoryController.__name__} route.")

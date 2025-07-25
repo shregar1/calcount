@@ -9,3 +9,4 @@ class APILK:
     CREATE_PROFILE: Final[str] = "CREATE_PROFILE"
     SEARCH_MEAL: Final[str] = "SEARCH_MEAL"
     ADD_MEAL: Final[str] = "ADD_MEAL"
+    MEAL_HISTORY: Final[str] = "MEAL_HISTORY"

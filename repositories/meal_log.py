@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from typing import List
 
@@ -114,6 +114,32 @@ class MealLogRepository(IRepository):
                 self.model.user_id == user_id,
                 self.model.is_deleted == is_deleted
             )
+            .all()
+        )
+        end_time = datetime.now()
+        execution_time = end_time - start_time
+        self.logger.info(f"Execution time: {execution_time} seconds")
+
+        return records if records else None
+
+    def retrieve_history_by_user_id_date_range(
+        self,
+        user_id: int,
+        from_date: datetime,
+        to_date: datetime,
+        is_deleted: bool = False,
+    ) -> List[MealLog]:
+
+        start_time = datetime.now()
+        records = (
+            self._session.query(self.model)
+            .filter(
+                self.model.user_id == user_id,
+                self.model.created_on >= from_date,
+                self.model.created_on <= to_date + timedelta(days=1),
+                self.model.is_deleted == is_deleted
+            )
+            .order_by(self.model.created_on.asc())
             .all()
         )
         end_time = datetime.now()

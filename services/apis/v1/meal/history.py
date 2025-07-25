@@ -1,6 +1,8 @@
+import collections
+
 from constants.api_status import APIStatus
 
-from dtos.requests.apis.v1.meal.fetch import FetchMealRequestDTO
+from dtos.requests.apis.v1.meal.history import FetchMealHistoryRequestDTO
 from dtos.responses.base import BaseResponseDTO
 
 from repositories.meal_log import MealLogRepository
@@ -71,12 +73,15 @@ class FetchMealHistoryService(IMealAPIService):
     def meal_log_repository(self, value):
         self._meal_log_repository = value
 
-    async def run(self, request_dto: FetchMealRequestDTO) -> BaseResponseDTO:
+    async def run(
+        self,
+        request_dto: FetchMealHistoryRequestDTO
+    ) -> BaseResponseDTO:
         """
         Fetch the meal history for the user.
         Args:
-            request_dto (FetchMealRequestDTO): The request DTO containing
-            request parameters.
+            request_dto (FetchMealHistoryRequestDTO): The request DTO
+            containing the from_date and to_date.
         Returns:
             BaseResponseDTO: The response DTO with meal history data.
         """
@@ -84,20 +89,35 @@ class FetchMealHistoryService(IMealAPIService):
         self.logger.info(
             f"Fetching meal history for user_id={self.user_id}"
         )
-        meal_history = self.meal_log_repository.retrieve_history_by_user_id(
-            user_id=self.user_id
+        meal_history = (
+            self.meal_log_repository.retrieve_history_by_user_id_date_range(
+                user_id=self.user_id,
+                from_date=request_dto.from_date,
+                to_date=request_dto.to_date,
+                is_deleted=False
+            )
         )
+
+        if not meal_history:
+            self.logger.info("No meal history found")
+            return BaseResponseDTO(
+                transactionUrn=self.urn,
+                status=APIStatus.SUCCESS,
+                responseMessage="No meal history found.",
+                responseKey="error_no_meal_history",
+                data=None,
+            )
         self.logger.info(
             f"Fetched {len(meal_history) if meal_history else 0} meal records"
         )
 
-        meal_history_data = []
+        meal_history_data = collections.defaultdict(list)
         for meal in meal_history:
             self.logger.debug(
                 f"Processing meal: {meal.meal_name} "
                 f"(servings: {meal.servings})"
             )
-            meal_history_data.append({
+            meal_history_data[str(meal.created_on.date())].append({
                 "meal_name": meal.meal_name,
                 "servings": meal.servings,
                 "nutrients": meal.nutrients,
@@ -105,7 +125,7 @@ class FetchMealHistoryService(IMealAPIService):
                 "instructions": meal.instructions,
                 "total_calories": meal.total_calories,
                 "calories_unit": meal.calories_unit,
-                "created_on": meal.created_on,
+                "created_on": str(meal.created_on),
                 "source": "usda"
             })
 
@@ -115,5 +135,5 @@ class FetchMealHistoryService(IMealAPIService):
             status=APIStatus.SUCCESS,
             responseMessage="Successfully fetched the meal history.",
             responseKey="success_fetch_meal",
-            data=meal_history_data,
+            data=dict(meal_history_data),
         )
