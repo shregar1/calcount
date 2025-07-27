@@ -290,6 +290,37 @@ curl --location 'http://0.0.0.0:8003/api/v1/meal/recommendation?reference_number
 --header 'Authorization: <token>'
 ```
 
+## Running Tests
+
+To run all tests with coverage and reporting, use the provided test runner script:
+
+```bash
+python run_tests.py
+```
+
+This script will:
+- Set up the test environment (loads .env variables)
+- Run all tests in the `tests/` directory using pytest
+- Show coverage in the terminal and generate an HTML coverage report in `htmlcov/`
+- Fail if coverage is below 80%
+
+You can pass additional arguments to pytest via the script, for example:
+
+```bash
+python run_tests.py -k "test_login" --maxfail=1
+```
+
+## Future Scope
+
+- **CI/CD Integration:** Automate test runs and coverage checks on every pull request using GitHub Actions or similar.
+- **Test Data Factories:** Use libraries like `factory_boy` for more robust and reusable test data setup.
+- **End-to-End Tests:** Add E2E tests for API endpoints using tools like `pytest-asyncio` or `httpx`.
+- **Performance Testing:** Integrate load and performance tests for critical endpoints.
+- **Security Audits:** Add automated security and static analysis checks.
+- **Documentation Coverage:** Enforce and track docstring and code documentation coverage.
+- **Mock External Services:** Expand mocking for third-party APIs and services to improve test reliability.
+- **Test Parallelization:** Speed up test runs using pytest-xdist or similar tools.
+
 ---
 
 ## Contributing
