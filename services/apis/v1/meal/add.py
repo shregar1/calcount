@@ -169,7 +169,9 @@ class AddMealService(IMealAPIService):
             }
 
         self.logger.info("Caching meal details")
-        self.cache.set(cache_key, json.dumps(data))
+        data_to_cache = data.copy()
+        data_to_cache.pop("urn", None)
+        self.cache.set(cache_key, json.dumps(data_to_cache))
 
         return BaseResponseDTO(
             transactionUrn=self.urn,
