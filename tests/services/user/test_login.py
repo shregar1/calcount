@@ -99,8 +99,8 @@ class TestUserLoginService(TestIUserService):
         ls = self.login_service
         login_data = UserLoginRequestDTO(
             reference_number=str(uuid.uuid4()),
-            email="nonexistent@example.com",
-            password="any_password",
+            email="nonexistent@test.com",
+            password="AnyPassword123!",
         )
 
         ls.user_repository.retrieve_record_by_email = (
@@ -120,8 +120,8 @@ class TestUserLoginService(TestIUserService):
         ls = self.login_service
         login_data = UserLoginRequestDTO(
             reference_number=str(uuid.uuid4()),
-            email="test@example.com",
-            password="wrong_password",
+            email="test@test.com",
+            password="WrongPassword123!",
         )
         ls.user_repository.retrieve_record_by_email = (
             Mock(return_value=mock_user)

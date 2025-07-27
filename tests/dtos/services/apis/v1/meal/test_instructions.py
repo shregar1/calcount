@@ -6,7 +6,7 @@ from dtos.services.apis.v1.meal.instructions import (
     RecipeIngredientDTO,
 )
 
-from tests.dtos.services.apis.v1.meal.test_meal_abstraction import (
+from tests.dtos.services.apis.v1.meal.test_meal_api_dto_abstraction import (
     TestIV1MealAPIServicesDTO,
 )
 

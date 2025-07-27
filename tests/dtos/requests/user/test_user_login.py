@@ -4,7 +4,7 @@ from pydantic import ValidationError
 
 from dtos.requests.user.login import UserLoginRequestDTO
 
-from tests.dtos.requests.user.test_user_abstractions import (
+from tests.dtos.requests.user.test_user_dto_abstractions import (
     TestIUserRequestDTO
 )
 
@@ -62,11 +62,13 @@ class TestLoginRequestDTO(TestIUserRequestDTO):
             assert error["loc"] == (field_name,)
             assert (
                 error["msg"] == 'Field required' or
-                error["msg"] == "Input should be a valid string"
+                error["msg"] == "Input should be a valid string" or
+                error["msg"] == "Input should be a valid email address"
             )
             assert (
                 error["type"] == "string_type" or
-                error["type"] == "missing"
+                error["type"] == "missing" or
+                error["type"] == "value_error"
             )
 
     async def test_user_login_requests_dto_all_none_error(self):
@@ -84,9 +86,11 @@ class TestLoginRequestDTO(TestIUserRequestDTO):
             assert error["loc"] == (error["loc"][0],)
             assert (
                 error["msg"] == 'Field required' or
-                error["msg"] == "Input should be a valid string"
+                error["msg"] == "Input should be a valid string" or
+                error["msg"] == "Input should be a valid email address"
             )
             assert (
                 error["type"] == "string_type" or
-                error["type"] == "missing"
+                error["type"] == "missing" or
+                error["type"] == "value_error"
             )

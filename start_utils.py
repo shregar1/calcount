@@ -46,16 +46,28 @@ ACCESS_TOKEN_EXPIRE_MINUTES: int = int(
 )
 GOOGLE_API_KEY: str = os.getenv("GOOGLE_API_KEY")
 USDA_API_KEY: str = os.getenv("USDA_API_KEY")
-RATE_LIMIT_MAX_REQUESTS: int = int(
+RATE_LIMIT_REQUESTS_PER_MINUTE: int = int(
     os.getenv(
-        "RATE_LIMIT_MAX_REQUESTS",
-        Default.RATE_LIMIT_MAX_REQUESTS,
+        "RATE_LIMIT_REQUESTS_PER_MINUTE",
+        Default.RATE_LIMIT_REQUESTS_PER_MINUTE,
+    )
+)
+RATE_LIMIT_REQUESTS_PER_HOUR: int = int(
+    os.getenv(
+        "RATE_LIMIT_REQUESTS_PER_HOUR",
+        Default.RATE_LIMIT_REQUESTS_PER_HOUR,
     )
 )
 RATE_LIMIT_WINDOW_SECONDS: int = int(
     os.getenv(
         "RATE_LIMIT_WINDOW_SECONDS",
         Default.RATE_LIMIT_WINDOW_SECONDS,
+    )
+)
+RATE_LIMIT_BURST_LIMIT: int = int(
+    os.getenv(
+        "RATE_LIMIT_BURST_LIMIT",
+        Default.RATE_LIMIT_BURST_LIMIT,
     )
 )
 logger.info("Loaded environment variables")

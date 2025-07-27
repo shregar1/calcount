@@ -9,7 +9,7 @@ from constants.api_status import APIStatus
 from errors.unexpected_response_error import UnexpectedResponseError
 from models.meal_log import MealLog
 
-from tests.services.apis.v1.meal.test_meal_abstraction import (
+from tests.services.apis.v1.meal.test_v1_meal_api_abstraction import (
     TestIV1MealAPIService
 )
 

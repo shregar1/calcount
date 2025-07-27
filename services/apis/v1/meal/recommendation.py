@@ -7,7 +7,7 @@ from dtos.requests.apis.v1.meal.recommendation import (
     FetchMealRecommendationRequestDTO
 )
 from dtos.responses.base import BaseResponseDTO
-from dtos.service.api.meal.recommendation import MealRecommendationDTO
+from dtos.services.apis.v1.meal.recommendation import MealRecommendationDTO
 
 from models.meal_log import MealLog
 from repositories.meal_log import MealLogRepository

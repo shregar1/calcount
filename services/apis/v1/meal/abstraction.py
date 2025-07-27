@@ -11,8 +11,8 @@ from constants.meal.prompt.instructions import MealInstructionsPrompt
 from constants.meal.prompt.recommendation import MealRecommendationPrompt
 
 from dtos.responses.base import BaseResponseDTO
-from dtos.service.api.meal.instructions import InstructionsDTO
-from dtos.service.api.meal.recommendation import MealRecommendationDTO
+from dtos.services.apis.v1.meal.instructions import InstructionsDTO
+from dtos.services.apis.v1.meal.recommendation import MealRecommendationDTO
 
 from errors.bad_input_error import BadInputError
 from errors.not_found_error import NotFoundError

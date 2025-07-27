@@ -29,14 +29,14 @@ class TestIUserService(TestIService):
         """
         Email for the user.
         """
-        return "test@example.com"
+        return "test@test.com"
 
     @pytest.fixture
     def password(self):
         """
         Password for the user.
         """
-        return "correct_password"
+        return "CorrectPassword123!"
 
     @pytest.fixture
     def hashed_password(self, password):

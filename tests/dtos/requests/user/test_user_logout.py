@@ -4,7 +4,7 @@ from pydantic import ValidationError
 
 from dtos.requests.user.logout import UserLogoutRequestDTO
 
-from tests.dtos.requests.user.test_user_abstractions import (
+from tests.dtos.requests.user.test_user_dto_abstractions import (
     TestIUserRequestDTO
 )
 

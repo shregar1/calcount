@@ -1,6 +1,8 @@
 import pytest
 
-from tests.dtos.services.apis.test_apis_abstraction import TestIAPIsServicesDTO
+from tests.dtos.services.apis.test_api_dto_abstraction import (
+    TestIAPIsServicesDTO,
+)
 
 
 @pytest.mark.asyncio

@@ -16,7 +16,9 @@ from repositories.meal_log import MealLogRepository
 
 from services.apis.v1.meal.add import AddMealService
 
-from tests.services.apis.v1.test_v1_abstraction import TestIV1APIService
+from tests.services.apis.v1.test_v1_api_service_abstraction import (
+    TestIV1APIService
+)
 
 
 @pytest.mark.asyncio

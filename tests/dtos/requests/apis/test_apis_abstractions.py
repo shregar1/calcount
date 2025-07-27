@@ -1,6 +1,6 @@
 import pytest
 
-from tests.dtos.requests.test_requests_abstractions import TestIRequestDTO
+from tests.dtos.requests.test_request_dto_abstractions import TestIRequestDTO
 
 
 @pytest.mark.asyncio

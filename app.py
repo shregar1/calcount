@@ -14,7 +14,13 @@ from controllers.user import router as UserRouter
 from controllers.apis import router as APISRouter
 
 from middlewares.authetication import AuthenticationMiddleware
-from middlewares.rate_limit import RateLimitMiddleware
+from middlewares.rate_limit import (
+    RateLimitMiddleware, RateLimitConfig
+)
+from middlewares.security_headers import (
+    SecurityHeadersMiddleware,
+    SecurityHeadersConfigDTO
+)
 from middlewares.request_context import RequestContextMiddleware
 
 
@@ -59,8 +65,22 @@ app.add_middleware(
 )
 
 logger.info("Initialising middleware stack")
+security_config = SecurityHeadersConfigDTO(
+    enable_hsts=True,
+    enable_csp=True,
+    hsts_max_age=31536000,
+    hsts_include_subdomains=True
+)
+app.add_middleware(SecurityHeadersMiddleware, **security_config.__dict__)
+rate_limit_config = RateLimitConfig(
+    requests_per_minute=60,
+    requests_per_hour=1000,
+    burst_limit=10,
+    enable_sliding_window=True,
+    enable_token_bucket=False
+)
+app.add_middleware(RateLimitMiddleware, config=rate_limit_config)
 app.add_middleware(AuthenticationMiddleware)
-app.add_middleware(RateLimitMiddleware)
 app.add_middleware(RequestContextMiddleware)
 logger.info("Initialised middleware stack")
 
