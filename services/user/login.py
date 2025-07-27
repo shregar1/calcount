@@ -21,7 +21,9 @@ from utilities.jwt import JWTUtility
 
 
 class UserLoginService(IUserService):
-
+    """
+    Service to handle user login, authentication, and token issuance.
+    """
     def __init__(
         self,
         urn: str = None,
@@ -38,6 +40,10 @@ class UserLoginService(IUserService):
         self._user_id = user_id
         self._user_repository = user_repository
         self._jwt_utility = jwt_utility
+        self.logger.debug(
+            f"UserLoginService initialized for "
+            f"user_id={user_id}, urn={urn}, api_name={api_name}"
+        )
 
     @property
     def urn(self):

@@ -1,3 +1,6 @@
+"""
+DTO for fetch meal history request payload, with validation for date fields.
+"""
 from datetime import date
 from pydantic import field_validator, Field
 from typing import Optional
@@ -6,7 +9,12 @@ from dtos.requests.abstraction import IRequestDTO
 
 
 class FetchMealHistoryRequestDTO(IRequestDTO):
-
+    """
+    DTO for fetch meal history request.
+    Fields:
+        from_date (date): Start date for history (validated).
+        to_date (date): End date for history (validated).
+    """
     from_date: Optional[date] = Field(default=date.today())
     to_date: Optional[date] = Field(default=date.today())
 

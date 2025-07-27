@@ -29,7 +29,10 @@ from utilities.dictionary import DictionaryUtility
 
 
 class FetchMealController(IV1MealAPIController):
-
+    """
+    Controller for fetching/searching meals (v1).
+    Handles GET requests for meal search endpoints.
+    """
     def __init__(
         self,
         urn: str = None,
@@ -37,7 +40,7 @@ class FetchMealController(IV1MealAPIController):
         api_name: str = None,
         user_id: str = None,
     ) -> None:
-        super().__init__(urn)
+        super().__init__(urn, user_urn, api_name, user_id)
         self._urn: str = urn
         self._user_urn: str = user_urn
         self._api_name: str = APILK.SEARCH_MEAL

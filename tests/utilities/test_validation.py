@@ -3,10 +3,11 @@ from datetime import datetime, timedelta
 
 from tests.utilities.test_utility_abstraction import TestIUtility
 
+from dtos.base import EnhancedBaseModel
+
 from utilities.validation import (
     ValidationUtility,
     SecurityValidators,
-    EnhancedBaseModel
 )
 
 

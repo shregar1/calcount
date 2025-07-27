@@ -1,3 +1,6 @@
+"""
+Repository for user data access, providing methods to query and manage users.
+"""
 from datetime import datetime
 from sqlalchemy.orm import Session
 
@@ -7,6 +10,10 @@ from abstractions.repository import IRepository
 
 
 class UserRepository(IRepository):
+    """
+    Repository for user data access and queries.
+    Provides methods to retrieve users by various criteria.
+    """
 
     def __init__(
         self,
@@ -32,6 +39,10 @@ class UserRepository(IRepository):
         self._user_id = user_id
         if not self._session:
             raise RuntimeError("DB session not found")
+        self.logger.debug(
+            f"UserRepository initialized for user_id={user_id}, "
+            f"urn={urn}, api_name={api_name}"
+        )
 
     @property
     def urn(self):
@@ -81,7 +92,16 @@ class UserRepository(IRepository):
         password: str,
         is_deleted: bool = False,
     ) -> User:
-
+        """
+        Retrieve a user by email and password.
+        Args:
+            email (str): User's email address.
+            password (str): User's password (hashed).
+            is_deleted (bool): Whether to include deleted users.
+        Returns:
+            User: The user record if found, else None.
+        """
+        self.logger.info(f"Retrieving user by email: {email}")
         start_time = datetime.now()
         record = (
             self.session.query(self.model)
@@ -103,7 +123,15 @@ class UserRepository(IRepository):
         email: str,
         is_deleted: bool = False,
     ) -> User:
-
+        """
+        Retrieve a user by email.
+        Args:
+            email (str): User's email address.
+            is_deleted (bool): Whether to include deleted users.
+        Returns:
+            User: The user record if found, else None.
+        """
+        self.logger.info(f"Retrieving user by email: {email}")
         start_time = datetime.now()
         record = (
             self.session.query(self.model)
@@ -125,7 +153,18 @@ class UserRepository(IRepository):
         is_logged_in: bool,
         is_deleted: bool = False,
     ) -> User:
-
+        """
+        Retrieve users by ID and login status.
+        Args:
+            id (str): User's ID.
+            is_logged_in (bool): Login status to filter by.
+            is_deleted (bool): Whether to include deleted users.
+        Returns:
+            list[User]: List of user records matching the criteria.
+        """
+        self.logger.info(
+            f"Retrieving user by id: {id}, is_logged_in: {is_logged_in}"
+        )
         start_time = datetime.now()
         records = (
             self.session.query(self.model)
@@ -148,7 +187,18 @@ class UserRepository(IRepository):
         is_logged_in: bool,
         is_deleted: bool = False,
     ) -> User:
-
+        """
+        Retrieve a user by ID and login status (single record).
+        Args:
+            id (int): User's ID.
+            is_logged_in (bool): Login status to filter by.
+            is_deleted (bool): Whether to include deleted users.
+        Returns:
+            User: The user record if found, else None.
+        """
+        self.logger.info(
+            f"Retrieving user by id: {id}, is_logged_in: {is_logged_in}"
+        )
         start_time = datetime.now()
         record = (
             self.session.query(self.model)

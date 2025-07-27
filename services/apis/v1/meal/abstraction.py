@@ -24,6 +24,11 @@ from start_utils import llm
 
 
 class IMealAPIService(IV1APIService):
+    """
+    Abstract base class for meal API services.
+    Provides shared logic for making API requests, processing meal data,
+    and generating instructions or recommendations.
+    """
 
     def __init__(
         self,
@@ -33,6 +38,10 @@ class IMealAPIService(IV1APIService):
         user_id: int = None,
     ) -> None:
         super().__init__(urn, user_urn, api_name, user_id)
+        self.logger.debug(
+            f"IMealAPIService initialized for "
+            f"user_id={user_id}, urn={urn}, api_name={api_name}"
+        )
 
     def run(self, request_dto: BaseModel) -> BaseResponseDTO:
         pass

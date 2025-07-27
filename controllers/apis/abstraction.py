@@ -1,7 +1,13 @@
 from abstractions.controller import IController
 
+from start_utils import logger
+
 
 class IAPIController(IController):
+    """
+    Base API controller abstraction for all API controllers.
+    Inherits from IController and provides common initialization and logging.
+    """
 
     def __init__(
         self,
@@ -10,5 +16,7 @@ class IAPIController(IController):
         api_name: str = None,
         user_id: int = None,
     ) -> None:
+        logger.debug(
+            "Initializing IAPIController"
+        )
         super().__init__(urn, user_urn, api_name, user_id)
-        pass

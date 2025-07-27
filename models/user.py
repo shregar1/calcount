@@ -1,3 +1,7 @@
+"""
+SQLAlchemy model for the user table, representing application users and their
+authentication details.
+"""
 from datetime import datetime
 from sqlalchemy import (
     Column,
@@ -14,7 +18,21 @@ from models import Base
 
 
 class User(Base):
-
+    """
+    SQLAlchemy model for a user.
+    Fields:
+        id (BigInteger): Primary key.
+        urn (str): Unique resource name for the user.
+        email (str): User's email address.
+        password (str): User's hashed password.
+        is_deleted (bool): Soft delete flag.
+        last_login (datetime): Last login timestamp.
+        is_logged_in (bool): Login status.
+        created_on (datetime): Creation timestamp.
+        created_by (BigInteger): Creator's user ID.
+        updated_on (datetime): Last update timestamp.
+        updated_by (BigInteger): Last updater's user ID.
+    """
     __tablename__ = Table.USER
 
     id = Column(BigInteger, primary_key=True)

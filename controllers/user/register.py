@@ -29,7 +29,10 @@ from utilities.dictionary import DictionaryUtility
 
 
 class UserRegistrationController(IUserController):
-
+    """
+    Controller for user registration.
+    Handles POST requests for user registration endpoints.
+    """
     def __init__(
         self,
         urn: str = None,

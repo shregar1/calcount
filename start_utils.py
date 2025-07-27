@@ -1,3 +1,7 @@
+"""
+Startup utilities for CalCount: loads configuration, environment variables,
+and initializes core services (DB, Redis, LLM, logging).
+"""
 import os
 import redis
 import sys
@@ -28,6 +32,7 @@ logger.add(
 )
 
 # Load environment variables from .env file
+logger.info("Loading .env file and environment variables")
 load_dotenv()
 
 logger.info("Loading Configurations")
@@ -75,7 +80,7 @@ RATE_LIMIT_BURST_LIMIT: int = int(
 )
 logger.info("Loaded environment variables")
 
-logger.info("Initializing PostgreSQL database")
+logger.info("Initializing PostgreSQL database connection")
 engine = create_engine(
     db_configuration.connection_string.format(
         user_name=db_configuration.user_name,
@@ -87,26 +92,29 @@ engine = create_engine(
 )
 Session = sessionmaker(bind=engine)
 db_session = Session()
-logger.info("Initialized PostgreSQL database")
+logger.info("Initialized PostgreSQL database connection")
 
-logger.info("Initializing Redis database")
+logger.info("Initializing Redis database connection")
 redis_session = redis.Redis(
     host=cache_configuration.host,
     port=cache_configuration.port,
     password=cache_configuration.password,
 )
 if not redis_session:
+    logger.error("No Redis session available")
     raise RuntimeError("No Redis session available")
-logger.info("Initialized Redis database")
+logger.info("Initialized Redis database connection")
 
-
+logger.info("Initializing LLM (Google Gemini) if API key is present")
 if GOOGLE_API_KEY:
     llm = ChatGoogleGenerativeAI(
         model="gemini-2.5-flash",
         google_api_key=GOOGLE_API_KEY,
     )
+    logger.info("Initialized Google Gemini LLM")
 else:
     llm = None
+    logger.info("No Google API key found; LLM not initialized")
 
 unprotected_routes: set = {
     "/health",
@@ -116,3 +124,4 @@ unprotected_routes: set = {
 callback_routes: set = set()
 
 db_session.commit()
+logger.info("Database session committed and startup complete")

@@ -20,7 +20,9 @@ from services.user.abstraction import IUserService
 
 
 class UserRegistrationService(IUserService):
-
+    """
+    Service to handle user registration and new user creation.
+    """
     def __init__(
         self,
         urn: str = None,
@@ -35,6 +37,10 @@ class UserRegistrationService(IUserService):
         self._api_name = api_name
         self._user_id = user_id
         self._user_repository = user_repository
+        self.logger.debug(
+            f"UserRegistrationService initialized for "
+            f"user_id={user_id}, urn={urn}, api_name={api_name}"
+        )
 
     @property
     def urn(self):

@@ -1,3 +1,7 @@
+"""
+SQLAlchemy model for the meal_log table, representing user meal logs and their
+nutritional details.
+"""
 from datetime import datetime
 from sqlalchemy import (
     Column,
@@ -18,7 +22,26 @@ from models.user import User
 
 
 class MealLog(Base):
-
+    """
+    SQLAlchemy model for a meal log entry.
+    Fields:
+        id (BigInteger): Primary key.
+        urn (str): Unique resource name for the meal log.
+        user_id (BigInteger): Foreign key to User.id.
+        meal_name (str): Name of the meal.
+        servings (int): Number of servings.
+        nutrients (JSON): Nutritional information.
+        ingredients (JSON): List of ingredients.
+        instructions (JSON): Cooking instructions.
+        total_calories_per_serving (int): Calories per serving.
+        calories_unit (str): Unit for calories.
+        total_calories (int): Total calories for the meal.
+        is_deleted (bool): Soft delete flag.
+        created_on (datetime): Creation timestamp.
+        created_by (BigInteger): Creator's user ID.
+        updated_on (datetime): Last update timestamp.
+        updated_by (BigInteger): Last updater's user ID.
+    """
     __tablename__ = Table.MEAL_LOG
 
     id = Column(BigInteger, primary_key=True)

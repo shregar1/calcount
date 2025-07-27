@@ -6,6 +6,10 @@ from start_utils import logger
 
 
 class DBConfiguration:
+    """
+    Singleton loader and manager for database configuration.
+    Loads configuration from config/db/config.json.
+    """
     _instance = None
 
     def __new__(cls):
@@ -17,19 +21,26 @@ class DBConfiguration:
         return cls._instance
 
     def load_config(self):
-
+        """
+        Load database configuration from JSON file.
+        Logs if the file is not found or cannot be decoded.
+        """
         try:
 
             with open("config/db/config.json", "r") as file:
                 self.config = json.load(file)
+            logger.debug("DB config loaded successfully.")
 
         except FileNotFoundError:
-            logger.debug("Config file not found.")
+            logger.debug("DB config file not found.")
 
         except json.JSONDecodeError:
-            logger.debug("Error decoding config file.")
+            logger.debug("Error decoding DB config file.")
 
     def get_config(self):
+        """
+        Return the database configuration as a DTO.
+        """
         return DBConfigurationDTO(
             user_name=self.config.get("user_name"),
             password=self.config.get("password"),

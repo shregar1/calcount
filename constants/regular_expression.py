@@ -1,10 +1,17 @@
+"""
+Regular expressions and patterns for input validation and security checks.
+"""
 import re
 
 from typing import Final, List
 
 
 class RegularExpression:
-
+    """
+    Collection of regular expressions for validating and securing input data.
+    Includes patterns for dates, passwords, emails, phone numbers,
+    SQL injection, XSS, and path traversal.
+    """
     DD_MM_YYYY: Final[str] = r"\b\d{2}/\d{2}/\d{4}\b"
     PASSWORD_PATTERN: Final[re.Pattern] = re.compile(
         r'^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$'

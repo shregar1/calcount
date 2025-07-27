@@ -27,7 +27,10 @@ from utilities.jwt import JWTUtility
 
 
 class UserLogoutController(IUserController):
-
+    """
+    Controller for user logout.
+    Handles POST requests for user logout endpoints.
+    """
     def __init__(
         self,
         urn: str = None,

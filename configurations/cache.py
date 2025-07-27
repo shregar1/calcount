@@ -6,6 +6,10 @@ from start_utils import logger
 
 
 class CacheConfiguration:
+    """
+    Singleton loader and manager for cache configuration.
+    Loads configuration from config/cache/config.json.
+    """
     _instance = None
 
     def __new__(cls):
@@ -17,19 +21,26 @@ class CacheConfiguration:
         return cls._instance
 
     def load_config(self):
-
+        """
+        Load cache configuration from JSON file.
+        Logs if the file is not found or cannot be decoded.
+        """
         try:
 
             with open("config/cache/config.json", "r") as file:
                 self.config = json.load(file)
+            logger.debug("Cache config loaded successfully.")
 
         except FileNotFoundError:
-            logger.debug("Config file not found.")
+            logger.debug("Cache config file not found.")
 
         except json.JSONDecodeError:
-            logger.debug("Error decoding config file.")
+            logger.debug("Error decoding cache config file.")
 
     def get_config(self):
+        """
+        Return the cache configuration as a DTO.
+        """
         return CacheConfigurationDTO(
             host=self.config.get("host", {}),
             port=self.config.get("port", {}),

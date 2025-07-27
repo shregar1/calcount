@@ -36,6 +36,10 @@ class FetchMealHistoryService(IMealAPIService):
         self._user_id = user_id
         self._meal_log_repository = meal_log_repository
         self._cache = cache
+        self.logger.debug(
+            f"FetchMealHistoryService initialized for "
+            f"user_id={user_id}, urn={urn}, api_name={api_name}"
+        )
 
     @property
     def urn(self):

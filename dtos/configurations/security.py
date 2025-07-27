@@ -1,3 +1,7 @@
+"""
+DTOs for security-related configuration settings (rate limiting, headers,
+validation, auth, CORS).
+"""
 from typing import List, Optional
 from pydantic import BaseModel
 

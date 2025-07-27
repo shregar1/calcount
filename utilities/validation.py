@@ -1,15 +1,23 @@
+"""
+Utility classes for input validation, security checks
+"""
 import re
 import uuid
 from typing import Any, Dict, Union
 from datetime import datetime
-from pydantic import BaseModel, validator
 from email_validator import validate_email, EmailNotValidError
+
+from abstractions.utility import IUtility
 
 from constants.regular_expression import RegularExpression
 
+from start_utils import logger
 
-class ValidationUtility:
-    """Utility class for comprehensive input validation beyond Pydantic."""
+
+class ValidationUtility(IUtility):
+    """
+    Utility class for comprehensive input validation beyond Pydantic.
+    """
 
     @staticmethod
     def validate_password_strength(password: str) -> Dict[str, Any]:
@@ -19,6 +27,7 @@ class ValidationUtility:
         Returns:
             Dict with 'is_valid' boolean and 'issues' list
         """
+        logger.debug("Validating password strength")
         issues = []
 
         if len(password) < 8:
@@ -68,7 +77,10 @@ class ValidationUtility:
 
     @staticmethod
     def validate_email_format(email: str) -> Dict[str, Any]:
-        """Validate email format using email-validator library."""
+        """
+        Validate email format using email-validator library.
+        """
+        logger.debug("Validating email format")
         try:
             valid = validate_email(email)
             return {
@@ -83,7 +95,10 @@ class ValidationUtility:
 
     @staticmethod
     def validate_uuid_format(uuid_string: str) -> bool:
-        """Validate UUID format."""
+        """
+        Validate UUID format.
+        """
+        logger.debug("Validating UUID format")
         try:
             uuid.UUID(uuid_string)
             return True
@@ -96,7 +111,10 @@ class ValidationUtility:
         end_date: datetime,
         max_days: int = 365,
     ) -> Dict[str, Any]:
-        """Validate date range with maximum allowed span."""
+        """
+        Validate date range with maximum allowed span.
+        """
+        logger.debug("Validating date range")
         if start_date >= end_date:
             return {
                 'is_valid': False,
@@ -124,6 +142,7 @@ class ValidationUtility:
         Returns:
             str: The sanitized string.
         """
+        logger.debug("Sanitizing string input")
         if not input_string:
             return ""
 
@@ -140,7 +159,10 @@ class ValidationUtility:
         min_val: Union[int, float],
         max_val: Union[int, float],
     ) -> bool:
-        """Validate numeric value is within specified range."""
+        """
+        Validate numeric value is within specified range.
+        """
+        logger.debug("Validating numeric range")
         return min_val <= value <= max_val
 
     @staticmethod
@@ -149,16 +171,24 @@ class ValidationUtility:
         min_length: int = 1,
         max_length: int = 1000,
     ) -> bool:
-        """Validate string length is within specified range."""
+        """
+        Validate string length is within specified range.
+        """
+        logger.debug("Validating string length")
         return min_length <= len(value) <= max_length
 
 
 class SecurityValidators:
-    """Security-focused validators for request data."""
+    """
+    Security-focused validators for request data.
+    """
 
     @staticmethod
     def validate_sql_injection_prevention(value: str) -> bool:
-        """Basic SQL injection prevention check."""
+        """
+        Basic SQL injection prevention check.
+        """
+        logger.debug("Validating SQL injection prevention")
         if not value:
             return True
 
@@ -170,7 +200,10 @@ class SecurityValidators:
 
     @staticmethod
     def validate_xss_prevention(value: str) -> bool:
-        """Basic XSS prevention check."""
+        """
+        Basic XSS prevention check.
+        """
+        logger.debug("Validating XSS prevention")
         if not value:
             return True
 
@@ -182,7 +215,10 @@ class SecurityValidators:
 
     @staticmethod
     def validate_path_traversal_prevention(value: str) -> bool:
-        """Prevent path traversal attacks."""
+        """
+        Prevent path traversal attacks.
+        """
+        logger.debug("Validating path traversal prevention")
         if not value:
             return True
 
@@ -190,50 +226,3 @@ class SecurityValidators:
             if re.search(pattern, value, re.IGNORECASE):
                 return False
         return True
-
-
-class EnhancedBaseModel(BaseModel):
-    """Enhanced base model with additional validation capabilities."""
-
-    class Config:
-        extra = "forbid"  # Reject extra fields
-        validate_assignment = True  # Validate on assignment
-        use_enum_values = True
-        json_encoders = {
-            datetime: lambda v: v.isoformat(),
-        }
-
-    @validator('*', pre=True)
-    def sanitize_strings(cls, v):
-        """Sanitize all string inputs."""
-        if isinstance(v, str):
-            return ValidationUtility.sanitize_string(v)
-        return v
-
-    def validate_security(self) -> Dict[str, Any]:
-        """Perform security validation on all string fields."""
-        issues = []
-
-        for field_name, field_value in self.dict().items():
-            if isinstance(field_value, str):
-                if not SecurityValidators.validate_sql_injection_prevention(
-                    field_value,
-                ):
-                    issues.append(
-                        f"Potential SQL injection in field '{field_name}'"
-                    )
-
-                if not SecurityValidators.validate_xss_prevention(field_value):
-                    issues.append(f"Potential XSS in field '{field_name}'")
-
-                if not SecurityValidators.validate_path_traversal_prevention(
-                    field_value,
-                ):
-                    issues.append(
-                        f"Potential path traversal in field '{field_name}'"
-                    )
-
-        return {
-            'is_valid': len(issues) == 0,
-            'issues': issues
-        }

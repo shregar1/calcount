@@ -14,7 +14,10 @@ from start_utils import USDA_API_KEY, usda_configuration
 
 
 class FetchMealService(IMealAPIService):
-
+    """
+    Service to fetch meal details for a user from the USDA API.
+    Handles caching, API requests, and data processing for meal details.
+    """
     def __init__(
         self,
         urn: str = None,
@@ -31,6 +34,10 @@ class FetchMealService(IMealAPIService):
         self._user_id = user_id
         self._meal_log_repository = meal_log_repository
         self._cache = cache
+        self.logger.debug(
+            f"FetchMealService initialized for "
+            f"user_id={user_id}, urn={urn}, api_name={api_name}"
+        )
 
     @property
     def urn(self):

@@ -1,10 +1,19 @@
+"""
+DTO for add meal request payload, with validation for meal name and servings.
+"""
 from pydantic import field_validator
 
 from dtos.requests.abstraction import IRequestDTO
 
 
 class AddMealRequestDTO(IRequestDTO):
-
+    """
+    DTO for add meal request.
+    Fields:
+        meal_name (str): Name of the meal (validated).
+        servings (int): Number of servings (validated).
+        get_instructions (bool): Whether to fetch instructions.
+    """
     meal_name: str
     servings: int
     get_instructions: bool

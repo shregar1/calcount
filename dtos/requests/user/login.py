@@ -1,11 +1,23 @@
+"""
+DTO for user login request payload, with validation for email and
+password fields.
+"""
 from pydantic import EmailStr, field_validator
 
 from dtos.requests.abstraction import IRequestDTO
-from utilities.validation import ValidationUtility, EnhancedBaseModel
+
+from dtos.base import EnhancedBaseModel
+
+from utilities.validation import ValidationUtility
 
 
 class UserLoginRequestDTO(IRequestDTO, EnhancedBaseModel):
-
+    """
+    DTO for user login request.
+    Fields:
+        email (EmailStr): User's email address (validated and normalized).
+        password (str): User's password (validated for strength and non-empty).
+    """
     email: EmailStr
     password: str
 

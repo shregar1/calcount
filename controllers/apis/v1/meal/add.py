@@ -37,7 +37,7 @@ class AddMealController(IV1MealAPIController):
         api_name: str = None,
         user_id: str = None,
     ) -> None:
-        super().__init__(urn)
+        super().__init__(urn, user_urn, api_name, user_id)
         self._urn: str = urn
         self._user_urn: str = user_urn
         self._api_name: str = APILK.ADD_MEAL

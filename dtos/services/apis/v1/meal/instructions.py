@@ -1,8 +1,20 @@
+"""
+DTOs for representing recipe instructions and ingredients for meal APIs.
+"""
 from pydantic import BaseModel, Field
 from typing import List, Optional
 
 
 class RecipeIngredientDTO(BaseModel):
+    """
+    DTO for a single recipe ingredient or step.
+    Fields:
+        ingredient (str, optional): Name of the ingredient.
+        amount (float, optional): Amount of the ingredient.
+        unit (str, optional): Unit of measurement.
+        preparation (str, optional): Preparation details (e.g., chopped).
+        description (str, optional): Description of the process step.
+    """
     ingredient: Optional[str] = Field(
         ..., description="Name of the ingredient, e.g., 'onion'."
     )
@@ -27,6 +39,12 @@ class RecipeIngredientDTO(BaseModel):
 
 
 class InstructionsDTO(BaseModel):
+    """
+    DTO for a list of recipe instructions (ingredients and steps).
+    Fields:
+        instructions (List[RecipeIngredientDTO]):
+            List of recipe ingredients/steps.
+    """
     instructions: List[RecipeIngredientDTO] = Field(
         ...,
         description=(

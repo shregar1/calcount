@@ -1,3 +1,7 @@
+"""
+Repository for meal log data access, providing methods to query and
+manage meal logs.
+"""
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from typing import List
@@ -11,6 +15,10 @@ from rapidfuzz import process, fuzz
 
 
 class MealLogRepository(IRepository):
+    """
+    Repository for meal log data access and queries.
+    Provides methods to retrieve meal logs by various criteria.
+    """
 
     def __init__(
         self,
@@ -36,6 +44,10 @@ class MealLogRepository(IRepository):
         self._user_id = user_id
         if not self._session:
             raise RuntimeError("DB session not found")
+        self.logger.debug(
+            f"MealLogRepository initialized for user_id={user_id}, "
+            f"urn={urn}, api_name={api_name}"
+        )
 
     @property
     def urn(self):
@@ -85,7 +97,15 @@ class MealLogRepository(IRepository):
         meal_name: str,
         is_deleted: bool = False,
     ) -> MealLog:
-
+        """
+        Retrieve a meal log by meal name.
+        Args:
+            meal_name (str): Name of the meal.
+            is_deleted (bool): Whether to include deleted records.
+        Returns:
+            MealLog: The meal log record if found, else None.
+        """
+        self.logger.info(f"Retrieving meal log by meal_name: {meal_name}")
         start_time = datetime.now()
         record = (
             self._session.query(self.model)
@@ -106,7 +126,15 @@ class MealLogRepository(IRepository):
         user_id: int,
         is_deleted: bool = False,
     ) -> List[MealLog]:
-
+        """
+        Retrieve meal history for a user by user ID.
+        Args:
+            user_id (int): User's ID.
+            is_deleted (bool): Whether to include deleted records.
+        Returns:
+            list[MealLog]: List of meal log records for the user.
+        """
+        self.logger.info(f"Retrieving meal history for user_id: {user_id}")
         start_time = datetime.now()
         records = (
             self._session.query(self.model)
@@ -129,7 +157,20 @@ class MealLogRepository(IRepository):
         to_date: datetime,
         is_deleted: bool = False,
     ) -> List[MealLog]:
-
+        """
+        Retrieve meal history for a user within a date range.
+        Args:
+            user_id (int): User's ID.
+            from_date (datetime): Start date.
+            to_date (datetime): End date.
+            is_deleted (bool): Whether to include deleted records.
+        Returns:
+            list[MealLog]: List of meal log records in the date range.
+        """
+        self.logger.info(
+            f"Retrieving meal history for user_id: {user_id} "
+            f"from {from_date} to {to_date}"
+        )
         start_time = datetime.now()
         records = (
             self._session.query(self.model)
@@ -154,6 +195,19 @@ class MealLogRepository(IRepository):
         date: datetime,
         is_deleted: bool = False,
     ) -> List[MealLog]:
+        """
+        Retrieve meal logs for a user on a specific date.
+        Args:
+            user_id (int): User's ID.
+            date (datetime): The date to filter by.
+            is_deleted (bool): Whether to include deleted records.
+        Returns:
+            list[MealLog]: List of meal log records for the date.
+        """
+        self.logger.info(
+            f"Retrieving meal log for user_id: {user_id} "
+            f"on date: {date}"
+        )
         start_time = datetime.now()
         records = (
             self._session.query(self.model)
@@ -178,7 +232,17 @@ class MealLogRepository(IRepository):
     ) -> MealLog:
         """
         Retrieve the closest matching meal log by fuzzy meal name.
+        Args:
+            meal_name (str): Name of the meal to search for.
+            is_deleted (bool): Whether to include deleted records.
+            threshold (int): Fuzzy match threshold (default 80).
+        Returns:
+            MealLog: The closest matching meal log if found, else None.
         """
+        self.logger.info(
+            f"Retrieving meal log by fuzzy meal_name: {meal_name}, "
+            f"threshold: {threshold}"
+        )
         all_meals = (
             self._session.query(self.model)
             .filter(self.model.is_deleted == is_deleted)

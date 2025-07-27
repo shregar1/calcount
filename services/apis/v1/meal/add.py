@@ -21,7 +21,10 @@ from start_utils import USDA_API_KEY, usda_configuration
 
 
 class AddMealService(IMealAPIService):
-
+    """
+    Service to add a new meal log for a user.
+    Fetches meal details, processes them, and stores the meal log.
+    """
     def __init__(
         self,
         urn: str = None,
@@ -38,6 +41,10 @@ class AddMealService(IMealAPIService):
         self._user_id = user_id
         self._meal_log_repository = meal_log_repository
         self._cache = cache
+        self.logger.debug(
+            f"AddMealService initialized for "
+            f"user_id={user_id}, urn={urn}, api_name={api_name}"
+        )
 
     @property
     def cache(self):

@@ -18,7 +18,10 @@ from services.apis.v1.meal.abstraction import IMealAPIService
 
 
 class FetchMealRecommendationService(IMealAPIService):
-
+    """
+    Service to generate meal recommendations for a user.
+    Uses meal history and food category to suggest meals.
+    """
     def __init__(
         self,
         urn: str = None,
@@ -35,6 +38,10 @@ class FetchMealRecommendationService(IMealAPIService):
         self._user_id = user_id
         self._meal_log_repository = meal_log_repository
         self._cache = cache
+        self.logger.debug(
+            f"FetchMealRecommendationService initialized for "
+            f"user_id={user_id}, urn={urn}, api_name={api_name}"
+        )
 
     @property
     def urn(self):

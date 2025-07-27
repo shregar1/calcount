@@ -16,7 +16,9 @@ from utilities.jwt import JWTUtility
 
 
 class UserLogoutService(IUserService):
-
+    """
+    Service to handle user logout and update user session status.
+    """
     def __init__(
         self,
         urn: str = None,
@@ -33,6 +35,10 @@ class UserLogoutService(IUserService):
         self._user_id = user_id
         self._user_repository = user_repository
         self._jwt_utility = jwt_utility
+        self.logger.debug(
+            f"UserLogoutService initialized for "
+            f"user_id={user_id}, urn={urn}, api_name={api_name}"
+        )
 
     @property
     def urn(self):

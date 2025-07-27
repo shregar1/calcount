@@ -14,7 +14,9 @@ from start_utils import (
 
 
 class JWTUtility(IUtility):
-
+    """
+    Utility for creating and decoding JWT tokens for authentication.
+    """
     def __init__(
         self,
         urn: str = None,
@@ -32,6 +34,10 @@ class JWTUtility(IUtility):
         self._user_urn: str = user_urn
         self._api_name: str = api_name
         self._user_id: str = user_id
+        self.logger.debug(
+            f"JWTUtility initialized for "
+            f"user_id={user_id}, urn={urn}, api_name={api_name}"
+        )
 
     @property
     def urn(self):
@@ -66,6 +72,14 @@ class JWTUtility(IUtility):
         self._user_id = value
 
     def create_access_token(self, data: dict) -> str:
+        """
+        Create a JWT access token with an expiration time.
+        Args:
+            data (dict): Data to encode in the token payload.
+        Returns:
+            str: Encoded JWT token as a string.
+        """
+        self.logger.info("Creating access token")
 
         to_encode = data.copy()
         if ACCESS_TOKEN_EXPIRE_MINUTES:
@@ -81,6 +95,16 @@ class JWTUtility(IUtility):
         return encoded_jwt
 
     def decode_token(self, token: str) -> Union[Dict[str, str]]:
+        """
+        Decode a JWT token and return its payload.
+        Args:
+            token (str): The JWT token to decode.
+        Returns:
+            dict: Decoded payload from the token.
+        Raises:
+            PyJWTError: If decoding fails or the token is invalid.
+        """
+        self.logger.info("Decoding JWT token")
         try:
 
             payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])

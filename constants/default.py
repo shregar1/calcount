@@ -1,8 +1,14 @@
+"""
+Default configuration constants for the application.
+"""
 from typing import Any, Dict, Final
 
 
 class Default:
-
+    """
+    Default values for application configuration, including rate limiting,
+    security, authentication, and CORS settings.
+    """
     ACCESS_TOKEN_EXPIRE_MINUTES: Final[int] = 1440
     RATE_LIMIT_MAX_REQUESTS: Final[int] = 2
     RATE_LIMIT_WINDOW_SECONDS: Final[int] = 60

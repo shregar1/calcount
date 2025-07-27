@@ -28,7 +28,10 @@ from utilities.jwt import JWTUtility
 
 
 class UserLoginController(IUserController):
-
+    """
+    Controller for user login.
+    Handles POST requests for user login endpoints.
+    """
     def __init__(self, urn: str = None) -> None:
         super().__init__(urn)
         self._urn = urn
