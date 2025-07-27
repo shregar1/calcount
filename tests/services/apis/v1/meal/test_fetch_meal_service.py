@@ -1,7 +1,7 @@
 import pytest
 
 from http import HTTPStatus
-from unittest.mock import AsyncMock
+from unittest.mock import AsyncMock, Mock
 
 from constants.api_status import APIStatus
 
@@ -13,7 +13,6 @@ from services.apis.v1.meal.fetch import FetchMealService
 from tests.services.apis.v1.test_v1_api_service_abstraction import (
     TestIV1APIService
 )
-from repositories.meal_log import MealLogRepository
 
 
 @pytest.mark.asyncio
@@ -94,13 +93,7 @@ class TestFetchMealService(TestIV1APIService):
         """
         Meal Log repository.
         """
-        return MealLogRepository(
-            urn=urn,
-            user_urn=user_urn,
-            api_name=api_name,
-            session=db_session,
-            user_id=user_id,
-        )
+        return Mock()
 
     @pytest.fixture(autouse=True)
     def setup(
@@ -115,6 +108,14 @@ class TestFetchMealService(TestIV1APIService):
             user_urn=user_urn,
             api_name=api_name,
             meal_log_repository=meal_log_repository,
+        )
+
+        self.fetch_meal_service.cache = Mock()
+        self.fetch_meal_service.cache.get = (
+            AsyncMock(return_value=None)
+        )
+        self.fetch_meal_service.cache.set = (
+            AsyncMock(return_value=None)
         )
 
     @pytest.fixture

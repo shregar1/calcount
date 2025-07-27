@@ -1,4 +1,5 @@
 import os
+import redis
 import sys
 
 from dotenv import load_dotenv
@@ -7,6 +8,7 @@ from loguru import logger
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 
+from configurations.cache import CacheConfiguration, CacheConfigurationDTO
 from configurations.db import DBConfiguration, DBConfigurationDTO
 from configurations.usda import USDAConfiguration, USDAConfigurationDTO
 
@@ -29,6 +31,7 @@ logger.add(
 load_dotenv()
 
 logger.info("Loading Configurations")
+cache_configuration: CacheConfigurationDTO = CacheConfiguration().get_config()
 db_configuration: DBConfigurationDTO = DBConfiguration().get_config()
 usda_configuration: USDAConfigurationDTO = USDAConfiguration().get_config()
 logger.info("Loaded Configurations")
@@ -86,10 +89,24 @@ Session = sessionmaker(bind=engine)
 db_session = Session()
 logger.info("Initialized PostgreSQL database")
 
-llm = ChatGoogleGenerativeAI(
-    model="gemini-2.5-flash",
-    google_api_key=GOOGLE_API_KEY,
+logger.info("Initializing Redis database")
+redis_session = redis.Redis(
+    host=cache_configuration.host,
+    port=cache_configuration.port,
+    password=cache_configuration.password,
 )
+if not redis_session:
+    raise RuntimeError("No Redis session available")
+logger.info("Initialized Redis database")
+
+
+if GOOGLE_API_KEY:
+    llm = ChatGoogleGenerativeAI(
+        model="gemini-2.5-flash",
+        google_api_key=GOOGLE_API_KEY,
+    )
+else:
+    llm = None
 
 unprotected_routes: set = {
     "/health",

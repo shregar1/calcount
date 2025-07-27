@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from typing import Callable
 from loguru import logger
 
-from abstractions.controller import IController
+from controllers.user.abstraction import IUserController
 
 from constants.api_lk import APILK
 from constants.api_status import APIStatus
@@ -29,7 +29,7 @@ from repositories.user import UserRepository
 from utilities.dictionary import DictionaryUtility
 
 
-class UserRegistrationController(IController):
+class UserRegistrationController(IUserController):
 
     def __init__(
         self,

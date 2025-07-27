@@ -1,7 +1,7 @@
 import pytest
 
 from http import HTTPStatus
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import Mock, AsyncMock, ANY
 
 from constants.api_status import APIStatus
 
@@ -95,6 +95,7 @@ class TestFetchMealAPIController(TestIV1MealAPIsController):
             request=mock_request,
             request_payload=valid_fetch_meal_request_dto,
             session=mock_session,
+            cache=Mock(),
             meal_log_repository=mock_meal_log_repository_factory,
             fetch_meal_service_factory=mock_fetch_meal_service_factory,
             dictionary_utility=mock_dictionary_utility_factory,
@@ -335,6 +336,7 @@ class TestFetchMealAPIController(TestIV1MealAPIsController):
             request=mock_request,
             request_payload=valid_fetch_meal_request_dto,
             session=mock_session,
+            cache=Mock(),
             meal_log_repository=mock_meal_log_repository_factory,
             fetch_meal_service_factory=mock_fetch_meal_service_factory,
             dictionary_utility=mock_dictionary_utility_factory,
@@ -373,6 +375,7 @@ class TestFetchMealAPIController(TestIV1MealAPIsController):
             request=mock_request,
             request_payload=valid_fetch_meal_request_dto,
             session=mock_session,
+            cache=Mock(),
             meal_log_repository=mock_meal_log_repository_factory,
             fetch_meal_service_factory=mock_fetch_meal_service_factory,
             dictionary_utility=mock_dictionary_utility_factory,
@@ -384,6 +387,7 @@ class TestFetchMealAPIController(TestIV1MealAPIsController):
             api_name="SEARCH_MEAL",
             user_id=user_id,
             meal_log_repository=mock_meal_log_repository_factory.return_value,
+            cache=ANY,
         )
 
     async def test_repository_factory_called_with_correct_params(
@@ -409,6 +413,7 @@ class TestFetchMealAPIController(TestIV1MealAPIsController):
             request=mock_request,
             request_payload=valid_fetch_meal_request_dto,
             session=mock_session,
+            cache=Mock(),
             meal_log_repository=mock_meal_log_repository_factory,
             fetch_meal_service_factory=mock_fetch_meal_service_factory,
             dictionary_utility=mock_dictionary_utility_factory,

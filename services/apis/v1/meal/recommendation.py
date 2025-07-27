@@ -1,6 +1,8 @@
 from typing import List
 from datetime import date, timedelta
 
+from redis import Redis
+
 from constants.api_status import APIStatus
 
 from dtos.requests.apis.v1.meal.recommendation import (
@@ -23,7 +25,8 @@ class FetchMealRecommendationService(IMealAPIService):
         user_urn: str = None,
         api_name: str = None,
         user_id: int = None,
-        meal_log_repository: MealLogRepository = None
+        meal_log_repository: MealLogRepository = None,
+        cache: Redis = None,
     ) -> None:
         super().__init__(urn, user_urn, api_name)
         self._urn = urn
@@ -31,6 +34,7 @@ class FetchMealRecommendationService(IMealAPIService):
         self._api_name = api_name
         self._user_id = user_id
         self._meal_log_repository = meal_log_repository
+        self._cache = cache
 
     @property
     def urn(self):
@@ -72,11 +76,20 @@ class FetchMealRecommendationService(IMealAPIService):
     def meal_log_repository(self, value):
         self._meal_log_repository = value
 
+    @property
+    def cache(self):
+        return self._cache
+
+    @cache.setter
+    def cache(self, value):
+        self._cache = value
+
     async def process_meal_recommendation(
         self,
         meal_history: List[MealLog],
         food_category: str
     ) -> MealRecommendationDTO:
+
         self.logger.info(
             f"Generating meal recommendations for category: {food_category}"
         )

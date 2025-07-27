@@ -1,7 +1,7 @@
 import pytest
 
 from http import HTTPStatus
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import Mock, AsyncMock, ANY
 
 from constants.api_status import APIStatus
 
@@ -84,6 +84,7 @@ class TestFetchMealHistoryAPIController(TestIV1MealAPIsController):
             from_date=valid_fetch_meal_history_request_dto.from_date,
             to_date=valid_fetch_meal_history_request_dto.to_date,
             session=mock_session,
+            cache=Mock(),
             meal_log_repository=mock_meal_log_repository_factory,
             fetch_meal_history_service_factory=(
                 mock_fetch_meal_history_service_factory
@@ -127,6 +128,7 @@ class TestFetchMealHistoryAPIController(TestIV1MealAPIsController):
             from_date=valid_fetch_meal_history_request_dto.from_date,
             to_date=valid_fetch_meal_history_request_dto.to_date,
             session=mock_session,
+            cache=Mock(),
             meal_log_repository=mock_meal_log_repository_factory,
             fetch_meal_history_service_factory=(
                 mock_fetch_meal_history_service_factory
@@ -410,6 +412,7 @@ class TestFetchMealHistoryAPIController(TestIV1MealAPIsController):
             from_date=valid_fetch_meal_history_request_dto.from_date,
             to_date=valid_fetch_meal_history_request_dto.to_date,
             session=mock_session,
+            cache=Mock(),
             meal_log_repository=mock_meal_log_repository_factory,
             fetch_meal_history_service_factory=(
                 mock_fetch_meal_history_service_factory
@@ -423,6 +426,7 @@ class TestFetchMealHistoryAPIController(TestIV1MealAPIsController):
             api_name="MEAL_HISTORY",
             user_id=user_id,
             meal_log_repository=mock_meal_log_repository_factory.return_value,
+            cache=ANY,
         )
 
     async def test_repository_factory_called_with_correct_params(
@@ -452,6 +456,7 @@ class TestFetchMealHistoryAPIController(TestIV1MealAPIsController):
             from_date=valid_fetch_meal_history_request_dto.from_date,
             to_date=valid_fetch_meal_history_request_dto.to_date,
             session=mock_session,
+            cache=Mock(),
             meal_log_repository=mock_meal_log_repository_factory,
             fetch_meal_history_service_factory=(
                 mock_fetch_meal_history_service_factory

@@ -1,5 +1,6 @@
 from http import HTTPMethod
-
+import json
+from redis import Redis
 from constants.api_status import APIStatus
 
 from dtos.requests.apis.v1.meal.fetch import FetchMealRequestDTO
@@ -20,7 +21,8 @@ class FetchMealService(IMealAPIService):
         user_urn: str = None,
         api_name: str = None,
         user_id: int = None,
-        meal_log_repository: MealLogRepository = None
+        meal_log_repository: MealLogRepository = None,
+        cache: Redis = None,
     ) -> None:
         super().__init__(urn, user_urn, api_name)
         self._urn = urn
@@ -28,6 +30,7 @@ class FetchMealService(IMealAPIService):
         self._api_name = api_name
         self._user_id = user_id
         self._meal_log_repository = meal_log_repository
+        self._cache = cache
 
     @property
     def urn(self):
@@ -69,7 +72,28 @@ class FetchMealService(IMealAPIService):
     def meal_log_repository(self, value):
         self._meal_log_repository = value
 
+    @property
+    def cache(self):
+        return self._cache
+
+    @cache.setter
+    def cache(self, value):
+        self._cache = value
+
     async def run(self, request_dto: FetchMealRequestDTO) -> BaseResponseDTO:
+
+        cache_key = f"meal_details_{request_dto.meal_name}"
+        cached_data = await self.cache.get(cache_key)
+        if cached_data:
+
+            self.logger.info("Meal details fetched from cache")
+            return BaseResponseDTO(
+                transactionUrn=self.urn,
+                status=APIStatus.SUCCESS,
+                responseMessage="Successfully fetched the meal details.",
+                responseKey="success_fetch_meal",
+                data=json.loads(cached_data),
+            )
 
         self.logger.info("Fetching meal details")
         url = usda_configuration.url.format(
@@ -97,12 +121,7 @@ class FetchMealService(IMealAPIService):
         calories_unit = meal_data.get("calories_unit")
         total_calories = total_calories_per_serving * request_dto.servings
 
-        return BaseResponseDTO(
-            transactionUrn=self.urn,
-            status=APIStatus.SUCCESS,
-            responseMessage="Successfully fetched the meal details.",
-            responseKey="success_fetch_meal",
-            data={
+        data = {
                 "meal_name": request_dto.meal_name,
                 "servings": request_dto.servings,
                 "nutrients_per_serving": meal_data.get("nutrients"),
@@ -112,5 +131,15 @@ class FetchMealService(IMealAPIService):
                 "total_calories": total_calories,
                 "calories_unit": calories_unit,
                 "source": "usda"
-            },
+            }
+
+        self.logger.info("Caching meal details")
+        await self.cache.set(cache_key, json.dumps(data))
+
+        return BaseResponseDTO(
+            transactionUrn=self.urn,
+            status=APIStatus.SUCCESS,
+            responseMessage="Successfully fetched the meal details.",
+            responseKey="success_fetch_meal",
+            data=data,
         )

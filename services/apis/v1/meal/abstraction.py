@@ -139,6 +139,11 @@ class IMealAPIService(IV1APIService):
         ingredients: List[Dict]
     ) -> InstructionsDTO:
 
+        if not llm:
+            return InstructionsDTO(
+                instructions=[]
+            )
+
         parser = PydanticOutputParser(pydantic_object=InstructionsDTO)
         prompt = MealInstructionsPrompt.INSTRUCTIONS_PROMPT.format(
             meal_name=meal_name,
@@ -153,6 +158,11 @@ class IMealAPIService(IV1APIService):
         food_category: str,
         meal_history: List[Dict[str, Any]]
     ) -> MealRecommendationDTO:
+
+        if not llm:
+            return MealRecommendationDTO(
+                meal_recommendation=[]
+            )
 
         parser = PydanticOutputParser(pydantic_object=MealRecommendationDTO)
         prompt = MealRecommendationPrompt.MEAL_RECOMMENDATION_PROMPT.format(

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from typing import Callable
 from loguru import logger
 
-from abstractions.controller import IController
+from controllers.user.abstraction import IUserController
 
 from constants.api_lk import APILK
 from constants.api_status import APIStatus
@@ -27,7 +27,7 @@ from utilities.dictionary import DictionaryUtility
 from utilities.jwt import JWTUtility
 
 
-class UserLogoutController(IController):
+class UserLogoutController(IUserController):
 
     def __init__(
         self,

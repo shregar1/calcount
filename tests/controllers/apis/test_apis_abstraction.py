@@ -96,12 +96,13 @@ class TestIAPIsController(TestIController):
         )
 
         response = await controller.get(
-            mock_request,
-            valid_add_meal_request_dto,
-            mock_session,
-            repository_factory,
-            service_factory,
-            mock_dictionary_utility_factory,
+            request=mock_request,
+            request_payload=valid_add_meal_request_dto,
+            session=mock_session,
+            cache=Mock(),
+            meal_log_repository=repository_factory,
+            fetch_meal_service_factory=service_factory,
+            dictionary_utility=mock_dictionary_utility_factory,
         )
 
         assert response.status_code == error.httpStatusCode
@@ -158,12 +159,13 @@ class TestIAPIsController(TestIController):
         )
 
         response = await controller.get(
-            mock_request,
-            valid_add_meal_request_dto,
-            mock_session,
-            repository_factory,
-            service_factory,
-            mock_dictionary_utility_factory,
+            request=mock_request,
+            request_payload=valid_add_meal_request_dto,
+            session=mock_session,
+            cache=Mock(),
+            meal_log_repository=repository_factory,
+            fetch_meal_service_factory=service_factory,
+            dictionary_utility=mock_dictionary_utility_factory,
         )
 
         assert response.status_code == error.httpStatusCode
@@ -220,12 +222,13 @@ class TestIAPIsController(TestIController):
         )
 
         response = await controller.get(
-            mock_request,
-            valid_add_meal_request_dto,
-            mock_session,
-            repository_factory,
-            service_factory,
-            mock_dictionary_utility_factory,
+            request=mock_request,
+            request_payload=valid_add_meal_request_dto,
+            session=mock_session,
+            cache=Mock(),
+            meal_log_repository=repository_factory,
+            fetch_meal_service_factory=service_factory,
+            dictionary_utility=mock_dictionary_utility_factory,
         )
 
         assert response.status_code == error.httpStatusCode
@@ -282,12 +285,13 @@ class TestIAPIsController(TestIController):
         )
 
         response = await controller.get(
-            mock_request,
-            valid_add_meal_request_dto,
-            mock_session,
-            repository_factory,
-            service_factory,
-            mock_dictionary_utility_factory,
+            request=mock_request,
+            request_payload=valid_add_meal_request_dto,
+            session=mock_session,
+            cache=Mock(),
+            meal_log_repository=repository_factory,
+            fetch_meal_service_factory=service_factory,
+            dictionary_utility=mock_dictionary_utility_factory,
         )
 
         assert response.status_code == HTTPStatus.INTERNAL_SERVER_ERROR

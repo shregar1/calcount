@@ -1,4 +1,7 @@
 import collections
+import json
+
+from redis import Redis
 
 from constants.api_status import APIStatus
 
@@ -24,7 +27,8 @@ class FetchMealHistoryService(IMealAPIService):
         user_urn: str = None,
         api_name: str = None,
         user_id: int = None,
-        meal_log_repository: MealLogRepository = None
+        meal_log_repository: MealLogRepository = None,
+        cache: Redis = None,
     ) -> None:
         super().__init__(urn, user_urn, api_name)
         self._urn = urn
@@ -32,6 +36,7 @@ class FetchMealHistoryService(IMealAPIService):
         self._api_name = api_name
         self._user_id = user_id
         self._meal_log_repository = meal_log_repository
+        self._cache = cache
 
     @property
     def urn(self):
@@ -73,6 +78,14 @@ class FetchMealHistoryService(IMealAPIService):
     def meal_log_repository(self, value):
         self._meal_log_repository = value
 
+    @property
+    def cache(self):
+        return self._cache
+
+    @cache.setter
+    def cache(self, value):
+        self._cache = value
+
     async def run(
         self,
         request_dto: FetchMealHistoryRequestDTO
@@ -86,14 +99,30 @@ class FetchMealHistoryService(IMealAPIService):
             BaseResponseDTO: The response DTO with meal history data.
         """
 
+        from_date = request_dto.from_date
+        to_date = request_dto.to_date
+        cache_key = (
+            f"meal_history_{self.user_id}_{from_date}_{to_date}"
+        )
+        cached_data = await self.cache.get(cache_key)
+        if cached_data:
+            self.logger.info("Meal history fetched from cache")
+            return BaseResponseDTO(
+                transactionUrn=self.urn,
+                status=APIStatus.SUCCESS,
+                responseMessage="Successfully fetched the meal history.",
+                responseKey="success_fetch_meal",
+                data=json.loads(cached_data),
+            )
+
         self.logger.info(
             f"Fetching meal history for user_id={self.user_id}"
         )
         meal_history = (
             self.meal_log_repository.retrieve_history_by_user_id_date_range(
                 user_id=self.user_id,
-                from_date=request_dto.from_date,
-                to_date=request_dto.to_date,
+                from_date=from_date,
+                to_date=to_date,
                 is_deleted=False
             )
         )
@@ -129,11 +158,15 @@ class FetchMealHistoryService(IMealAPIService):
                 "source": "usda"
             })
 
+        data = dict(meal_history_data)
+        self.logger.info("Caching meal history")
+        await self.cache.set(cache_key, json.dumps(data))
+
         self.logger.info("Returning meal history response")
         return BaseResponseDTO(
             transactionUrn=self.urn,
             status=APIStatus.SUCCESS,
             responseMessage="Successfully fetched the meal history.",
             responseKey="success_fetch_meal",
-            data=dict(meal_history_data),
+            data=data,
         )

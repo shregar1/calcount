@@ -7,7 +7,7 @@ from constants.api_status import APIStatus
 from constants.meal.category import MealCategory
 
 from dtos.requests.apis.v1.meal.recommendation import (
-    FetchMealRecommendationRequestDTO
+    FetchMealRecommendationRequestDTO,
 )
 from dtos.services.apis.v1.meal.recommendation import MealRecommendationDTO
 from models.meal_log import MealLog
@@ -30,17 +30,17 @@ class TestFetchMealRecommendationService(TestIV1APIService):
         user_urn,
         api_name,
         user_id,
-        meal_log_repository,
     ):
+        mock_repository = Mock()
         self.fetch_meal_recommendation_service = (
-            FetchMealRecommendationService(
-                urn=urn,
-                user_urn=user_urn,
-                api_name=api_name,
-                user_id=user_id,
-                meal_log_repository=meal_log_repository,
+                FetchMealRecommendationService(
+                    urn=urn,
+                    user_urn=user_urn,
+                    api_name=api_name,
+                    user_id=user_id,
+                    meal_log_repository=mock_repository,
+                )
             )
-        )
 
     @pytest.fixture
     def valid_fetch_meal_recommendation_data(
@@ -149,7 +149,7 @@ class TestFetchMealRecommendationService(TestIV1APIService):
                 total_calories=total_calories_per_serving * servings,
                 is_deleted=False,
                 created_on=datetime.datetime.now(),
-                created_by=user_id
+                created_by=user_id,
             ),
             MealLog(
                 id=2,
@@ -165,23 +165,18 @@ class TestFetchMealRecommendationService(TestIV1APIService):
                 total_calories=300,
                 is_deleted=False,
                 created_on=datetime.datetime.now(),
-                created_by=user_id
-            )
+                created_by=user_id,
+            ),
         ]
 
     @pytest.fixture
     def mock_meal_recommendation_dto(self):
         from dtos.services.apis.v1.meal.recommendation import MealDTO
+
         return MealRecommendationDTO(
             meals=[
-                MealDTO(
-                    meal_name="Keto Avocado Toast",
-                    servings=2
-                ),
-                MealDTO(
-                    meal_name="Keto Salmon Bowl",
-                    servings=1
-                )
+                MealDTO(meal_name="Keto Avocado Toast", servings=2),
+                MealDTO(meal_name="Keto Salmon Bowl", servings=1),
             ]
         )
 
@@ -192,37 +187,42 @@ class TestFetchMealRecommendationService(TestIV1APIService):
         mock_meal_recommendation_dto,
     ):
         service = self.fetch_meal_recommendation_service
-        service.meal_log_repository.retrieve_history_by_user_id = (
-            Mock(return_value=mock_meal_logs)
+        repository = service.meal_log_repository
+        repository.retrieve_history_by_user_id_date_range = Mock(
+            return_value=mock_meal_logs
         )
         service.process_meal_recommendation = AsyncMock(
             return_value=mock_meal_recommendation_dto
         )
 
         result = await service.run(
-            request_dto=valid_fetch_meal_recommendation_data
+            request_dto=valid_fetch_meal_recommendation_data,
         )
 
-        fn = service.meal_log_repository.retrieve_history_by_user_id
-        fn.assert_called_once_with(
+        from datetime import date, timedelta
+
+        expected_from_date = date.today()
+        expected_to_date = date.today() - timedelta(days=7)
+
+        repository = service.meal_log_repository
+        method = repository.retrieve_history_by_user_id_date_range
+        method.assert_called_once_with(
             user_id=service.user_id,
-            is_deleted=False
+            from_date=expected_from_date,
+            to_date=expected_to_date,
+            is_deleted=False,
         )
         service.process_meal_recommendation.assert_awaited_once_with(
-            meal_history=mock_meal_logs,
-            food_category=MealCategory.KETO
+            mock_meal_logs, MealCategory.KETO
         )
 
         assert result.status == APIStatus.SUCCESS
-        assert result.responseKey == "success_fetch_meal_recommendation"
+        assert result.responseKey == "success_fetch_meal_recommendations"
         assert result.responseMessage == (
-            "Successfully fetched meal recommendations."
+            "Successfully fetched the meal recommendations."
         )
-        assert result.data["recommendations"] == (
-            mock_meal_recommendation_dto.recommendations
-        )
-        assert result.data["category"] == MealCategory.KETO
-        assert result.data["total_recommendations"] == 2
+        expected_meals = mock_meal_recommendation_dto.model_dump()["meals"]
+        assert result.data["meals"] == expected_meals
 
     async def test_empty_meal_history_recommendation(
         self,
@@ -230,25 +230,25 @@ class TestFetchMealRecommendationService(TestIV1APIService):
         mock_meal_recommendation_dto,
     ):
         service = self.fetch_meal_recommendation_service
-        service.meal_log_repository.retrieve_history_by_user_id = (
-            Mock(return_value=[])
+        repository = service.meal_log_repository
+        repository.retrieve_history_by_user_id_date_range = Mock(
+            return_value=[]
         )
         service.process_meal_recommendation = AsyncMock(
             return_value=mock_meal_recommendation_dto
         )
 
         result = await service.run(
-            request_dto=valid_fetch_meal_recommendation_data
+            request_dto=valid_fetch_meal_recommendation_data,
         )
 
         assert result.status == APIStatus.SUCCESS
-        assert result.responseKey == "success_fetch_meal_recommendation"
+        assert result.responseKey == "success_fetch_meal_recommendations"
         assert result.responseMessage == (
-            "Successfully fetched meal recommendations."
+            "Successfully fetched the meal recommendations."
         )
-        assert result.data["recommendations"] == (
-            mock_meal_recommendation_dto.recommendations
-        )
+        expected_meals = mock_meal_recommendation_dto.model_dump()["meals"]
+        assert result.data["meals"] == expected_meals
 
     async def test_different_food_categories(
         self,
@@ -270,8 +270,9 @@ class TestFetchMealRecommendationService(TestIV1APIService):
             )
 
             service = self.fetch_meal_recommendation_service
-            service.meal_log_repository.retrieve_history_by_user_id = (
-                Mock(return_value=mock_meal_logs)
+            repository = service.meal_log_repository
+            repository.retrieve_history_by_user_id_date_range = Mock(
+                return_value=mock_meal_logs
             )
             service.process_meal_recommendation = AsyncMock(
                 return_value=mock_meal_recommendation_dto
@@ -280,10 +281,10 @@ class TestFetchMealRecommendationService(TestIV1APIService):
             result = await service.run(request_dto=request_dto)
 
             assert result.status == APIStatus.SUCCESS
-            assert result.data["category"] == category
+            expected_meals = mock_meal_recommendation_dto.model_dump()["meals"]
+            assert result.data["meals"] == expected_meals
             service.process_meal_recommendation.assert_awaited_with(
-                meal_history=mock_meal_logs,
-                food_category=category
+                mock_meal_logs, category
             )
 
     async def test_repository_error_handling(
@@ -291,14 +292,13 @@ class TestFetchMealRecommendationService(TestIV1APIService):
         valid_fetch_meal_recommendation_data,
     ):
         service = self.fetch_meal_recommendation_service
-        service.meal_log_repository.retrieve_history_by_user_id = (
-            Mock(side_effect=Exception("Database error"))
+        repository = service.meal_log_repository
+        repository.retrieve_history_by_user_id_date_range = Mock(
+            side_effect=Exception("Database error")
         )
 
         with pytest.raises(Exception) as exc_info:
-            await service.run(
-                request_dto=valid_fetch_meal_recommendation_data
-            )
+            await service.run(request_dto=valid_fetch_meal_recommendation_data)
 
         assert str(exc_info.value) == "Database error"
 
@@ -308,17 +308,16 @@ class TestFetchMealRecommendationService(TestIV1APIService):
         mock_meal_logs,
     ):
         service = self.fetch_meal_recommendation_service
-        service.meal_log_repository.retrieve_history_by_user_id = (
-            Mock(return_value=mock_meal_logs)
+        repository = service.meal_log_repository
+        repository.retrieve_history_by_user_id_date_range = Mock(
+            return_value=mock_meal_logs
         )
         service.process_meal_recommendation = AsyncMock(
             side_effect=Exception("Processing error")
         )
 
         with pytest.raises(Exception) as exc_info:
-            await service.run(
-                request_dto=valid_fetch_meal_recommendation_data
-            )
+            await service.run(request_dto=valid_fetch_meal_recommendation_data)
 
         assert str(exc_info.value) == "Processing error"
 
@@ -369,8 +368,7 @@ class TestFetchMealRecommendationService(TestIV1APIService):
         )
 
         result = await service.process_meal_recommendation(
-            meal_history=mock_meal_logs,
-            food_category=MealCategory.KETO
+            meal_history=mock_meal_logs, food_category=MealCategory.KETO
         )
 
         service.generate_meal_recommendation.assert_called_once_with(
@@ -387,8 +385,8 @@ class TestFetchMealRecommendationService(TestIV1APIService):
                     "servings": mock_meal_logs[1].servings,
                     "nutrients": mock_meal_logs[1].nutrients,
                     "ingredients": mock_meal_logs[1].ingredients,
-                }
-            ]
+                },
+            ],
         )
 
         assert result == mock_meal_recommendation_dto
@@ -404,11 +402,9 @@ class TestFetchMealRecommendationService(TestIV1APIService):
         )
 
         await service.process_meal_recommendation(
-            meal_history=mock_meal_logs,
-            food_category=MealCategory.VEGAN
+            meal_history=mock_meal_logs, food_category=MealCategory.VEGAN
         )
 
-        # Verify the meal history data is correctly transformed
         expected_meal_history = [
             {
                 "meal_name": mock_meal_logs[0].meal_name,
@@ -421,7 +417,7 @@ class TestFetchMealRecommendationService(TestIV1APIService):
                 "servings": mock_meal_logs[1].servings,
                 "nutrients": mock_meal_logs[1].nutrients,
                 "ingredients": mock_meal_logs[1].ingredients,
-            }
+            },
         ]
 
         service.generate_meal_recommendation.assert_called_once_with(
@@ -434,7 +430,6 @@ class TestFetchMealRecommendationService(TestIV1APIService):
         valid_fetch_meal_recommendation_data,
         mock_meal_recommendation_dto,
     ):
-        # Test with complex meal data including nested structures
         complex_meal_logs = [
             MealLog(
                 id=1,
@@ -445,12 +440,12 @@ class TestFetchMealRecommendationService(TestIV1APIService):
                 nutrients={
                     "protein": {"value": 25, "unit": "g"},
                     "fat": {"value": 30, "unit": "g"},
-                    "carbs": {"value": 5, "unit": "g"}
+                    "carbs": {"value": 5, "unit": "g"},
                 },
                 ingredients=[
                     {"name": "chicken", "amount": "200g"},
                     {"name": "avocado", "amount": "1 whole"},
-                    {"name": "olive oil", "amount": "2 tbsp"}
+                    {"name": "olive oil", "amount": "2 tbsp"},
                 ],
                 instructions=["Step 1", "Step 2", "Step 3"],
                 total_calories_per_serving=450,
@@ -458,23 +453,23 @@ class TestFetchMealRecommendationService(TestIV1APIService):
                 total_calories=900,
                 is_deleted=False,
                 created_on=datetime.datetime.now(),
-                created_by=123
+                created_by=123,
             )
         ]
 
         service = self.fetch_meal_recommendation_service
-        service.meal_log_repository.retrieve_history_by_user_id = (
-            Mock(return_value=complex_meal_logs)
+        repository = service.meal_log_repository
+        repository.retrieve_history_by_user_id_date_range = Mock(
+            return_value=complex_meal_logs
         )
         service.process_meal_recommendation = AsyncMock(
             return_value=mock_meal_recommendation_dto
         )
 
         result = await service.run(
-            request_dto=valid_fetch_meal_recommendation_data
+            request_dto=valid_fetch_meal_recommendation_data,
         )
 
         assert result.status == APIStatus.SUCCESS
-        assert result.data["recommendations"] == (
-            mock_meal_recommendation_dto.recommendations
-        )
+        expected_meals = mock_meal_recommendation_dto.model_dump()["meals"]
+        assert result.data["meals"] == expected_meals

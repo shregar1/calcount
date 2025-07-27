@@ -4,7 +4,7 @@ from http import HTTPStatus
 from sqlalchemy.orm import Session
 from typing import Callable
 
-from abstractions.controller import IController
+from controllers.user.abstraction import IUserController
 
 from constants.api_lk import APILK
 from constants.api_status import APIStatus
@@ -27,7 +27,7 @@ from utilities.dictionary import DictionaryUtility
 from utilities.jwt import JWTUtility
 
 
-class UserLoginController(IController):
+class UserLoginController(IUserController):
 
     def __init__(self, urn: str = None) -> None:
         super().__init__(urn)

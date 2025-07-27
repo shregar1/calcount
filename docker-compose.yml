@@ -7,6 +7,16 @@ networks:
 
 services:
 
+  redis:
+    image: "redis:7.2-alpine"
+    command: redis-server --requirepass "test123"
+    expose:
+     - "6379"
+    ports:
+      - 6379:6379
+    networks:
+      - calcount_net
+
   postgres:
     image: postgres:16-alpine
     environment:
@@ -31,6 +41,7 @@ services:
       - .:/app
     depends_on:
       - postgres
+      - redis
     networks:
       - calcount_net
 

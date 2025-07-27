@@ -15,6 +15,7 @@ class FetchMealHistoryServiceDependency(IDependency):
             api_name,
             user_id,
             meal_log_repository,
+            cache,
         ):
             return FetchMealHistoryService(
                 urn=urn,
@@ -22,5 +23,6 @@ class FetchMealHistoryServiceDependency(IDependency):
                 api_name=api_name,
                 user_id=user_id,
                 meal_log_repository=meal_log_repository,
+                cache=cache,
             )
         return factory

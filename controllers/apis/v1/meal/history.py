@@ -3,14 +3,16 @@ from fastapi import Query, Request, Depends
 from fastapi.responses import JSONResponse
 from http import HTTPStatus
 from loguru import logger
+from redis import Redis
 from sqlalchemy.orm import Session
 from typing import Callable
 
-from abstractions.controller import IController
+from controllers.apis.v1.meal.abstraction import IV1MealAPIController
 
 from constants.api_lk import APILK
 from constants.api_status import APIStatus
 
+from dependencies.cache import CacheDependency
 from dependencies.db import DBDependency
 from dependencies.repositiories.meal_log import MealLogRepositoryDependency
 from dependencies.services.apis.v1.meal.history import (
@@ -29,7 +31,7 @@ from repositories.meal_log import MealLogRepository
 from utilities.dictionary import DictionaryUtility
 
 
-class FetchMealHistoryController(IController):
+class FetchMealHistoryController(IV1MealAPIController):
 
     def __init__(
         self,
@@ -113,6 +115,7 @@ class FetchMealHistoryController(IController):
             alias="to_date",
         ),
         session: Session = Depends(DBDependency.derive),
+        cache: Redis = Depends(CacheDependency.derive),
         meal_log_repository: MealLogRepository = Depends(
             MealLogRepositoryDependency.derive
         ),
@@ -179,6 +182,7 @@ class FetchMealHistoryController(IController):
                     api_name=self.api_name,
                     user_id=self.user_id,
                     meal_log_repository=self.meal_log_repository,
+                    cache=cache,
                 ).run(
                     request_dto=request_payload
                 )

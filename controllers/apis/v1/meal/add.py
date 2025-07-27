@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from typing import Callable
 from loguru import logger
 
-from abstractions.controller import IController
+from controllers.apis.v1.meal.abstraction import IV1MealAPIController
 
 from constants.api_lk import APILK
 from constants.api_status import APIStatus
@@ -27,7 +27,7 @@ from repositories.meal_log import MealLogRepository
 from utilities.dictionary import DictionaryUtility
 
 
-class AddMealController(IController):
+class AddMealController(IV1MealAPIController):
 
     def __init__(
         self,

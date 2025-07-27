@@ -1,7 +1,7 @@
 import datetime
 import pytest
 
-from unittest.mock import Mock
+from unittest.mock import Mock, AsyncMock
 
 from constants.api_status import APIStatus
 
@@ -13,7 +13,6 @@ from services.apis.v1.meal.history import FetchMealHistoryService
 from tests.services.apis.v1.test_v1_api_service_abstraction import (
     TestIV1APIService,
 )
-from repositories.meal_log import MealLogRepository
 
 
 @pytest.mark.asyncio
@@ -31,13 +30,7 @@ class TestFetchMealHistoryService(TestIV1APIService):
         """
         Meal Log repository.
         """
-        return MealLogRepository(
-            urn=urn,
-            user_urn=user_urn,
-            api_name=api_name,
-            session=db_session,
-            user_id=user_id,
-        )
+        return Mock()
 
     @pytest.fixture(autouse=True)
     def setup(
@@ -56,6 +49,13 @@ class TestFetchMealHistoryService(TestIV1APIService):
                 user_id=user_id,
                 meal_log_repository=meal_log_repository,
             )
+        )
+        self.fetch_meal_history_service.cache = Mock()
+        self.fetch_meal_history_service.cache.get = (
+            AsyncMock(return_value=None)
+        )
+        self.fetch_meal_history_service.cache.set = (
+            AsyncMock(return_value=None)
         )
 
     @pytest.fixture
@@ -309,16 +309,16 @@ class TestFetchMealHistoryService(TestIV1APIService):
         )
 
         service = self.fetch_meal_history_service
-        fn = service.meal_log_repository.retrieve_history_by_user_id_date_range
-        fn = Mock(
+        repository = service.meal_log_repository
+        repository.retrieve_history_by_user_id_date_range = Mock(
             return_value=[]
         )
 
         result = await service.run(request_dto=request_dto)
 
         assert result.status == APIStatus.SUCCESS
-        fn = service.meal_log_repository.retrieve_history_by_user_id_date_range
-        fn.assert_called_once_with(
+        method = repository.retrieve_history_by_user_id_date_range
+        method.assert_called_once_with(
             user_id=service.user_id,
             from_date=datetime.date.today(),
             to_date=datetime.date.today(),
