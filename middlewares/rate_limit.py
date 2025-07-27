@@ -15,6 +15,7 @@ from start_utils import (
     RATE_LIMIT_REQUESTS_PER_HOUR,
     RATE_LIMIT_REQUESTS_PER_MINUTE,
     RATE_LIMIT_WINDOW_SECONDS,
+    unprotected_routes,
 )
 
 
@@ -153,7 +154,7 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         super().__init__(app)
         self.config = config or RateLimitConfig()
         self.excluded_paths = (
-            excluded_paths or {"/health", "/docs", "/openapi.json"}
+            excluded_paths or unprotected_routes
         )
         self.excluded_methods = excluded_methods or {"OPTIONS"}
         self.store = RateLimitStore()

@@ -295,11 +295,11 @@ curl --location 'http://0.0.0.0:8003/api/v1/meal/recommendation?reference_number
 This project uses [FastAPI](https://fastapi.tiangolo.com/), which automatically generates interactive API documentation for all endpoints.
 
 - **Swagger UI:**
-  - Visit: `http://localhost:8000/docs`
+  - Visit: `http://localhost:8003/docs`
   - Interactive interface to explore and test all API endpoints.
 
 - **ReDoc:**
-  - Visit: `http://localhost:8000/redoc`
+  - Visit: `http://localhost:8003/redoc`
   - Alternative, more detailed API documentation view.
 
 No extra setup is required—just run the app and visit the above URLs in your browser.
