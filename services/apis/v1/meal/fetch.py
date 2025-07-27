@@ -76,7 +76,7 @@ class FetchMealService(IMealAPIService):
                 query=request_dto.meal_name,
                 api_key=USDA_API_KEY
             )
-        meal_details = self.make_api_request(
+        meal_details = await self.make_api_request(
             url=url,
             method=HTTPMethod.GET,
             headers={"x-api-key": USDA_API_KEY},
@@ -85,7 +85,7 @@ class FetchMealService(IMealAPIService):
         self.logger.info("Meal details fetched")
 
         self.logger.info("Parsing meal details")
-        meal_data = self.process_meal_details(
+        meal_data = await self.process_meal_details(
             meal_name=request_dto.meal_name,
             servings=request_dto.servings,
             meal_details=meal_details,

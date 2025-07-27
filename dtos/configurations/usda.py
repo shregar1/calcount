@@ -1,6 +1,5 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class USDAConfigurationDTO:
+class USDAConfigurationDTO(BaseModel):
     url: str

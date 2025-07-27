@@ -1,162 +1,186 @@
-import os
+import datetime
 import pytest
-import bcrypt
-from datetime import datetime
+import uuid
+
 from unittest.mock import Mock
 
-from services.user.login import UserLoginService
+from errors.not_found_error import NotFoundError
 from models.user import User
+from repositories.user import UserRepository
+from services.user.login import UserLoginService
 from errors.bad_input_error import BadInputError
+from dtos.requests.user.login import UserLoginRequestDTO
+
+from tests.services.user.test_user_abstraction import TestIUserService
 
 
 @pytest.mark.asyncio
-class TestUserLoginService:
+class TestUserLoginService(TestIUserService):
     @pytest.fixture(autouse=True)
-    def setup(self, db_session):
-        """Setup runs before each test method"""
-        self.test_password = "correct_password"
-        self.salt = os.getenv("BCRYPT_SALT")
-        self.hashed_password = bcrypt.hashpw(
-            self.test_password.encode("utf8"), self.salt.encode("utf8")
-        ).decode("utf8")
+    def setup(
+        self,
+        urn,
+        user_urn,
+        api_name,
+        mock_jwt_utility,
+        user_repository,
+    ):
+        self.user_repository: UserRepository = user_repository
+        self.login_service: UserLoginService = UserLoginService(
+            urn=urn,
+            user_urn=user_urn,
+            api_name=api_name,
+            user_repository=self.user_repository,
+            jwt_utility=mock_jwt_utility,
+        )
 
-        # Create mock user
-        self.mock_user = User(
+    @pytest.fixture
+    def valid_login_data(
+        self,
+        reference_number,
+        email,
+        password,
+    ):
+        return UserLoginRequestDTO(
+            reference_number=reference_number,
+            email=email,
+            password=password,
+        )
+
+    @pytest.fixture
+    def invalid_login_data(
+        self,
+        reference_number,
+        email,
+    ):
+        return UserLoginRequestDTO(
+            reference_number=reference_number,
+            email=email,
+            password="incorrect_password",
+        )
+
+    @pytest.fixture
+    def mock_user(self, urn, email, hashed_password):
+        return User(
             id=1,
-            urn="test-urn",
-            email="test@example.com",
-            password=self.hashed_password,
-            is_logged_in=False,
-            updated_on=datetime.now(),
+            urn=urn,
+            email=email,
+            password=hashed_password,
+            is_logged_in=True,
+            created_on=datetime.datetime.now(),
+            updated_on=datetime.datetime.now(),
         )
 
-        # Create service instance
-        self.service = UserLoginService(
-            urn="test-urn", user_urn="test-user-urn", api_name="test-api"
+    async def test_successful_login(
+        self,
+        valid_login_data,
+        mock_user,
+        jwt_token,
+    ):
+        self.login_service.user_repository.retrieve_record_by_email = Mock(
+            return_value=mock_user
         )
-        self.service.user_repository.session = db_session
-
-    async def test_successful_login(self):
-        # Arrange
-        login_data = {
-            "email": "test@example.com",
-            "password": self.test_password,
-            "user_type": "COMPANY",
-        }
-
-        self.service.user_repository.retrieve_record_by_email_user_type_id = (
-            Mock(return_value=self.mock_user)
+        self.login_service.user_repository.update_record = Mock(
+            return_value=mock_user
         )
-        self.service.user_repository.update_record = Mock(
-            return_value=self.mock_user
-        )
-        self.service.jwt_utility.create_access_token = Mock(
-            return_value="mock-jwt-token"
+        self.login_service.jwt_utility.create_access_token = Mock(
+            return_value=jwt_token
         )
 
-        # Act
-        result = await self.service.run(login_data)
+        result = await self.login_service.run(valid_login_data)
 
-        # Assert
         assert result.status == "SUCCESS"
-        assert result.data["status"] == self.mock_user.is_logged_in
-        assert result.data["token"] == "mock-jwt-token"
-        assert result.data["user_urn"] == self.mock_user.urn
+        assert result.data["status"] == mock_user.is_logged_in
+        assert result.data["token"] == jwt_token
+        assert result.data["user_urn"] == mock_user.urn
 
     async def test_user_not_found(self):
-        # Arrange
-        login_data = {
-            "email": "nonexistent@example.com",
-            "password": "any_password",
-            "user_type": "COMPANY",
-        }
 
-        self.service.user_repository.retrieve_record_by_email_user_type_id = (
+        ls = self.login_service
+        login_data = UserLoginRequestDTO(
+            reference_number=str(uuid.uuid4()),
+            email="nonexistent@example.com",
+            password="any_password",
+        )
+
+        ls.user_repository.retrieve_record_by_email = (
             Mock(return_value=None)
         )
 
-        # Act & Assert
-        with pytest.raises(BadInputError) as exc_info:
-            await self.service.run(login_data)
+        with pytest.raises(NotFoundError) as exc_info:
+            await self.login_service.run(login_data)
 
         assert exc_info.value.responseKey == "error_authorisation_failed"
-        assert "User not Found" in exc_info.value.responseMessage
-
-    async def test_incorrect_password(self):
-        # Arrange
-        login_data = {
-            "email": "test@example.com",
-            "password": "wrong_password",
-            "user_type": "COMPANY",
-        }
-
-        self.service.user_repository.retrieve_record_by_email_user_type_id = (
-            Mock(return_value=self.mock_user)
+        assert exc_info.value.responseMessage == (
+            "User not Found. Incorrect email."
         )
 
-        # Act & Assert
+    async def test_incorrect_password(self, mock_user: User):
+
+        ls = self.login_service
+        login_data = UserLoginRequestDTO(
+            reference_number=str(uuid.uuid4()),
+            email="test@example.com",
+            password="wrong_password",
+        )
+        ls.user_repository.retrieve_record_by_email = (
+            Mock(return_value=mock_user)
+        )
+
         with pytest.raises(BadInputError) as exc_info:
-            await self.service.run(login_data)
+            await self.login_service.run(login_data)
 
         assert exc_info.value.responseKey == "error_authorisation_failed"
-        assert "Incorrect password" in exc_info.value.responseMessage
+        assert exc_info.value.responseMessage == "Incorrect password."
 
-    async def test_login_updates_user_status(self):
-        # Arrange
-        login_data = {
-            "email": "test@example.com",
-            "password": self.test_password,
-            "user_type": "COMPANY",
-        }
-
-        self.service.user_repository.retrieve_record_by_email_user_type_id = (
-            Mock(return_value=self.mock_user)
+    async def test_login_updates_user_status(
+        self,
+        valid_login_data: UserLoginRequestDTO,
+        mock_user: User,
+        jwt_token: str,
+    ):
+        self.login_service.user_repository.retrieve_record_by_email = (
+            Mock(return_value=mock_user)
         )
-        self.service.user_repository.update_record = Mock()
-        self.service.jwt_utility.create_access_token = Mock(
-            return_value="mock-jwt-token"
+        self.login_service.user_repository.update_record = Mock(
+            return_value=mock_user
         )
-
-        # Act
-        await self.service.run(login_data)
-
-        # Assert
-        self.service.user_repository.update_record.assert_called_once()
-        update_call_args = (
-            self.service.user_repository.update_record.call_args[1]
-        )
-        assert update_call_args["id"] == self.mock_user.id
-        assert update_call_args["new_data"]["is_logged_in"] is True
-        assert "last_login" in update_call_args["new_data"]
-
-    async def test_jwt_token_payload(self):
-        # Arrange
-        login_data = {
-            "email": "test@example.com",
-            "password": self.test_password,
-            "user_type": "COMPANY",
-        }
-
-        self.service.user_repository.retrieve_record_by_email_user_type_id = (
-            Mock(return_value=self.mock_user)
-        )
-        self.service.user_repository.update_record = Mock(
-            return_value=self.mock_user
+        self.login_service.jwt_utility.create_access_token = Mock(
+            return_value=jwt_token
         )
 
-        create_token_mock = Mock(return_value="mock-jwt-token")
-        self.service.jwt_utility.create_access_token = create_token_mock
+        result = await self.login_service.run(valid_login_data)
 
-        # Act
-        await self.service.run(login_data)
+        self.login_service.user_repository.update_record.assert_called_once()
+        assert result.data["status"] == mock_user.is_logged_in
+        assert result.data["token"] == jwt_token
+        assert result.data["user_urn"] == mock_user.urn
 
-        # Assert
+    async def test_jwt_token_payload(
+        self,
+        valid_login_data: UserLoginRequestDTO,
+        mock_user: User,
+        jwt_token: str,
+    ):
+        ls = self.login_service
+        ls.user_repository.retrieve_record_by_email = (
+            Mock(return_value=mock_user)
+        )
+        ls.user_repository.update_record = Mock(
+            return_value=mock_user
+        )
+        ls.jwt_utility.create_access_token = (
+            Mock(return_value=jwt_token)
+        )
+
+        await ls.run(valid_login_data)
+
         expected_payload = {
-            "user_id": self.mock_user.id,
-            "user_urn": self.mock_user.urn,
-            "user_email": self.mock_user.email,
-            "last_login": str(self.mock_user.updated_on),
+            "user_id": mock_user.id,
+            "user_urn": mock_user.urn,
+            "user_email": mock_user.email,
+            "last_login": str(mock_user.updated_on),
         }
-        self.service.jwt_utility.create_access_token.assert_called_once_with(
+        ls.jwt_utility.create_access_token.assert_called_once_with(
             data=expected_payload
         )

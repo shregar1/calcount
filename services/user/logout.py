@@ -94,7 +94,7 @@ class UserLogoutService(IUserService):
             raise BadInputError(
                 responseMessage="User not Found. Incorrect user id.",
                 responseKey="error_authorisation_failed",
-                http_status_code=HTTPStatus.BAD_REQUEST,
+                httpStatusCode=HTTPStatus.BAD_REQUEST,
             )
 
         self.logger.debug("Updating logged out status")

@@ -102,7 +102,7 @@ class UserLoginService(IUserService):
             raise NotFoundError(
                 responseMessage="User not Found. Incorrect email.",
                 responseKey="error_authorisation_failed",
-                http_status_code=HTTPStatus.NOT_FOUND,
+                httpStatusCode=HTTPStatus.NOT_FOUND,
             )
 
         if not bcrypt.checkpw(
@@ -112,7 +112,7 @@ class UserLoginService(IUserService):
             raise BadInputError(
                 responseMessage="Incorrect password.",
                 responseKey="error_authorisation_failed",
-                http_status_code=HTTPStatus.BAD_REQUEST,
+                httpStatusCode=HTTPStatus.BAD_REQUEST,
             )
 
         self.logger.debug("Updating logged in status")

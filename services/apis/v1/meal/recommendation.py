@@ -72,7 +72,7 @@ class FetchMealRecommendationService(IMealAPIService):
     def meal_log_repository(self, value):
         self._meal_log_repository = value
 
-    def process_meal_recommendation(
+    async def process_meal_recommendation(
         self,
         meal_history: List[MealLog],
         food_category: str
@@ -125,7 +125,7 @@ class FetchMealRecommendationService(IMealAPIService):
         )
 
         self.logger.info("Generating meal recommendations")
-        recommendations_dto = self.process_meal_recommendation(
+        recommendations_dto = await self.process_meal_recommendation(
             meal_history, request_dto.food_category)
         recommendations_data = recommendations_dto.model_dump()
         self.logger.info("Meal recommendations generated")

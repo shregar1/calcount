@@ -169,7 +169,7 @@ class UserLogoutController(IController):
             ).run()
 
             self.logger.debug("Preparing response metadata")
-            http_status_code = HTTPStatus.OK
+            httpStatusCode = HTTPStatus.OK
             self.logger.debug("Prepared response metadata")
 
         except (BadInputError, UnexpectedResponseError, NotFoundError) as err:
@@ -185,7 +185,7 @@ class UserLogoutController(IController):
                 responseKey=err.responseKey,
                 data={},
             )
-            http_status_code = err.http_status_code
+            httpStatusCode = err.httpStatusCode
             self.logger.debug("Prepared response metadata")
 
         except Exception as err:
@@ -202,12 +202,12 @@ class UserLogoutController(IController):
                 responseKey="error_internal_server_error",
                 data={},
             )
-            http_status_code = HTTPStatus.INTERNAL_SERVER_ERROR
+            httpStatusCode = HTTPStatus.INTERNAL_SERVER_ERROR
             self.logger.debug("Prepared response metadata")
 
         return JSONResponse(
             content=self.dictionary_utility.convert_dict_keys_to_camel_case(
-                response_dto.to_dict()
+                response_dto.model_dump()
             ),
-            status_code=http_status_code,
+            status_code=httpStatusCode,
         )

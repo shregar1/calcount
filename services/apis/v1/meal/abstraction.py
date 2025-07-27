@@ -37,7 +37,7 @@ class IMealAPIService(IV1APIService):
     def run(self, request_dto: BaseModel) -> BaseResponseDTO:
         pass
 
-    def make_api_request(
+    async def make_api_request(
         self,
         url: str,
         headers: dict = None,
@@ -56,7 +56,7 @@ class IMealAPIService(IV1APIService):
                 raise NotFoundError(
                     responseMessage=f"Resource not found at {url}",
                     responseKey="error_not_found",
-                    http_status_code=HTTPStatus.NOT_FOUND,
+                    httpStatusCode=HTTPStatus.NOT_FOUND,
                 )
 
             response.raise_for_status()
@@ -69,7 +69,7 @@ class IMealAPIService(IV1APIService):
                 raise UnexpectedResponseError(
                     responseMessage=f"Invalid JSON response from {url}",
                     responseKey="error_invalid_json",
-                    http_status_code=response.status_code,
+                    httpStatusCode=response.status_code,
                 )
 
         except requests.exceptions.HTTPError as e:
@@ -78,7 +78,7 @@ class IMealAPIService(IV1APIService):
             raise BadInputError(
                 responseMessage=f"HTTP error occurred: {e}",
                 responseKey="error_http_error",
-                http_status_code=response.status_code,
+                httpStatusCode=response.status_code,
             )
 
         except requests.exceptions.RequestException as e:
@@ -86,10 +86,10 @@ class IMealAPIService(IV1APIService):
             raise UnexpectedResponseError(
                 responseMessage=f"Request failed: {e}",
                 responseKey="error_request_failed",
-                http_status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+                httpStatusCode=HTTPStatus.INTERNAL_SERVER_ERROR,
             )
 
-    def select_food_record_with_ingredients_and_nutrients(
+    async def select_food_record_with_ingredients_and_nutrients(
         self,
         data: List[Dict]
     ) -> Dict | None:
@@ -133,7 +133,7 @@ class IMealAPIService(IV1APIService):
         )
         return data[0]
 
-    def generate_instructions(
+    async def generate_instructions(
         self,
         meal_name: str,
         ingredients: List[Dict]
@@ -148,7 +148,7 @@ class IMealAPIService(IV1APIService):
         response: InstructionsDTO = parser.parse(llm_response.content)
         return response
 
-    def generate_meal_recommendation(
+    async def generate_meal_recommendation(
         self,
         food_category: str,
         meal_history: List[Dict[str, Any]]
@@ -163,7 +163,7 @@ class IMealAPIService(IV1APIService):
         response: MealRecommendationDTO = parser.parse(llm_response.content)
         return response
 
-    def extract_essential_nutrients(
+    async def extract_essential_nutrients(
         self,
         meal_data: dict
     ) -> dict:
@@ -217,7 +217,7 @@ class IMealAPIService(IV1APIService):
 
         return extracted_nutrients
 
-    def calculate_total_calories(
+    async def calculate_total_calories(
         self,
         meal_data: dict
     ) -> tuple:
@@ -243,7 +243,7 @@ class IMealAPIService(IV1APIService):
 
         return None, None
 
-    def extract_ingredients(
+    async def extract_ingredients(
         self,
         meal_data: dict
     ) -> List[Dict]:
@@ -269,7 +269,7 @@ class IMealAPIService(IV1APIService):
             })
         return ingredients_list
 
-    def process_meal_details(
+    async def process_meal_details(
         self,
         meal_name: str,
         servings: int,
@@ -279,7 +279,8 @@ class IMealAPIService(IV1APIService):
 
         foods_data = meal_details.get("foods", [])
 
-        meal_data = self.select_food_record_with_ingredients_and_nutrients(
+        callable = self.select_food_record_with_ingredients_and_nutrients
+        meal_data = await callable(
             data=foods_data
         )
 
@@ -287,18 +288,18 @@ class IMealAPIService(IV1APIService):
             raise NotFoundError(
                 responseMessage="No meal data found",
                 responseKey="error_no_meal_data_found",
-                http_status_code=HTTPStatus.NOT_FOUND,
+                httpStatusCode=HTTPStatus.NOT_FOUND,
             )
 
-        total_calories, calories_unit = self.calculate_total_calories(
+        total_calories, calories_unit = await self.calculate_total_calories(
             meal_data=meal_data
         )
 
-        essential_nutrients = self.extract_essential_nutrients(
+        essential_nutrients = await self.extract_essential_nutrients(
             meal_data=meal_data
         )
 
-        ingredients = self.extract_ingredients(
+        ingredients = await self.extract_ingredients(
             meal_data=meal_data
         )
 
@@ -307,7 +308,7 @@ class IMealAPIService(IV1APIService):
             try:
 
                 self.logger.info("Generating instructions")
-                instructions = self.generate_instructions(
+                instructions = await self.generate_instructions(
                     meal_name=meal_name,
                     ingredients=ingredients
                 )

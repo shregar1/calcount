@@ -1,13 +1,14 @@
 import ulid
 
 from datetime import datetime
-from http import HTTPMethod
+from http import HTTPMethod, HTTPStatus
 
 from constants.api_status import APIStatus
 
 from dtos.requests.apis.v1.meal.add import AddMealRequestDTO
 from dtos.responses.base import BaseResponseDTO
 
+from errors.unexpected_response_error import UnexpectedResponseError
 from models.meal_log import MealLog
 
 from repositories.meal_log import MealLogRepository
@@ -81,7 +82,7 @@ class AddMealService(IMealAPIService):
                 query=request_dto.meal_name,
                 api_key=USDA_API_KEY
             )
-        meal_details = self.make_api_request(
+        meal_details: dict = await self.make_api_request(
             url=url,
             method=HTTPMethod.GET,
             headers={"x-api-key": USDA_API_KEY},
@@ -90,7 +91,7 @@ class AddMealService(IMealAPIService):
         self.logger.info("Meal details fetched")
 
         self.logger.info("Parsing meal details")
-        meal_data = self.process_meal_details(
+        meal_data: dict = await self.process_meal_details(
             meal_name=request_dto.meal_name,
             servings=request_dto.servings,
             meal_details=meal_details,
@@ -101,6 +102,14 @@ class AddMealService(IMealAPIService):
         total_calories_per_serving = meal_data.get("total_calories")
         calories_unit = meal_data.get("calories_unit")
         total_calories = total_calories_per_serving * request_dto.servings
+
+        if total_calories_per_serving < 0:
+            self.logger.error("Calories cannot be negative")
+            raise UnexpectedResponseError(
+                responseMessage="Calories cannot be negative.",
+                responseKey="error_negative_calories",
+                httpStatusCode=HTTPStatus.UNPROCESSABLE_ENTITY,
+            )
 
         self.logger.info("Adding meal")
         meal_log: MealLog = MealLog(

@@ -46,10 +46,10 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                 responseKey="error_authetication_error",
                 data={},
             )
-            http_status_code = HTTPStatus.UNAUTHORIZED
+            httpStatusCode = HTTPStatus.UNAUTHORIZED
             logger.debug("Prepared response metadata", urn=request.state.urn)
             return JSONResponse(
-                content=response_dto.to_dict(), status_code=http_status_code
+                content=response_dto.model_dump(), status_code=httpStatusCode
             )
 
         try:
@@ -89,13 +89,13 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                     responseMessage="User Session Expired.",
                     responseKey="error_session_expiry",
                 )
-                http_status_code = HTTPStatus.UNAUTHORIZED
+                httpStatusCode = HTTPStatus.UNAUTHORIZED
                 logger.debug(
                     "Prepared response metadata", urn=request.state.urn
                 )
                 return JSONResponse(
-                    content=response_dto.to_dict(),
-                    status_code=http_status_code,
+                    content=response_dto.model_dump(),
+                    status_code=httpStatusCode,
                 )
 
             request.state.user_id = user_data.get("user_id")
@@ -117,10 +117,10 @@ class AuthenticationMiddleware(BaseHTTPMiddleware):
                 responseKey="error_authetication_error",
                 data={},
             )
-            http_status_code = HTTPStatus.UNAUTHORIZED
+            httpStatusCode = HTTPStatus.UNAUTHORIZED
             logger.debug("Prepared response metadata", urn=request.state.urn)
             return JSONResponse(
-                content=response_dto.to_dict(), status_code=http_status_code
+                content=response_dto.model_dump(), status_code=httpStatusCode
             )
 
         logger.debug(

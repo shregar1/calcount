@@ -15,13 +15,13 @@ class FetchMealRecommendationRequestDTO(IRequestDTO):
             raise ValueError(
                 "food_category is required and must be a non-empty string."
             )
-        allowed = {
+        allowed = [
             MealCategory.KETO,
             MealCategory.VEGAN,
             MealCategory.FRUITARIAN,
             MealCategory.CARNIVORE,
             MealCategory.PALEO,
-        }
+        ]
         if v not in allowed:
             raise ValueError(
                 f"food_category must be one of: {', '.join(allowed)}"

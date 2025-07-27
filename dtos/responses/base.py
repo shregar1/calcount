@@ -1,12 +1,8 @@
+from pydantic import BaseModel
 from typing import List, Dict, Union, Optional
 
-from dataclasses import dataclass
-from dataclasses_json import dataclass_json
 
-
-@dataclass_json
-@dataclass
-class BaseResponseDTO:
+class BaseResponseDTO(BaseModel):
 
     transactionUrn: str
     status: str

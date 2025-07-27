@@ -89,7 +89,7 @@ class UserRegistrationService(IUserService):
             raise BadInputError(
                 responseMessage="Email already registered.",
                 responseKey="error_email_already_registered",
-                http_status_code=HTTPStatus.BAD_REQUEST,
+                httpStatusCode=HTTPStatus.BAD_REQUEST,
             )
 
         self.logger.debug("Preparing user data")

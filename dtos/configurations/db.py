@@ -1,8 +1,7 @@
-from dataclasses import dataclass
+from pydantic import BaseModel
 
 
-@dataclass
-class DBConfigurationDTO:
+class DBConfigurationDTO(BaseModel):
     user_name: str
     password: str
     host: str
