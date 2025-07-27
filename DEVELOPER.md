@@ -166,7 +166,7 @@ graph TD
 
 ## Common Commands
 
-- **Run the app:** `uvicorn app:app --reload`
+- **Run the app:** `python app.py`
 - **Run tests:** `pytest`
 - **Run migrations:** `alembic upgrade head`
 - **Create migration:** `alembic revision --autogenerate -m "message"`
