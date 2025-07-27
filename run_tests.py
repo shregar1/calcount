@@ -21,10 +21,8 @@ def run_tests():
     """Run pytest with appropriate options."""
     setup_test_environment()
 
-    # Get the project root directory
     project_root = Path(__file__).parent
 
-    # pytest command with options
     cmd = [
         sys.executable, "-m", "pytest",
         str(project_root / "tests"),
@@ -36,16 +34,10 @@ def run_tests():
         "--cov-fail-under=80",
     ]
 
-    # Add additional arguments if provided
     if len(sys.argv) > 1:
         cmd.extend(sys.argv[1:])
 
-    print("Running tests with command:", " ".join(cmd))
-    print("=" * 50)
-
-    # Run the tests
     result = subprocess.run(cmd, cwd=project_root)
-
     return result.returncode
 
 

@@ -1,7 +1,9 @@
+import json
 import ulid
 
 from datetime import datetime
 from http import HTTPMethod, HTTPStatus
+from redis import Redis
 
 from constants.api_status import APIStatus
 
@@ -26,7 +28,8 @@ class AddMealService(IMealAPIService):
         user_urn: str = None,
         api_name: str = None,
         user_id: int = None,
-        meal_log_repository: MealLogRepository = None
+        meal_log_repository: MealLogRepository = None,
+        cache: Redis = None,
     ) -> None:
         super().__init__(urn, user_urn, api_name)
         self._urn = urn
@@ -34,6 +37,15 @@ class AddMealService(IMealAPIService):
         self._api_name = api_name
         self._user_id = user_id
         self._meal_log_repository = meal_log_repository
+        self._cache = cache
+
+    @property
+    def cache(self):
+        return self._cache
+
+    @cache.setter
+    def cache(self, value):
+        self._cache = value
 
     @property
     def urn(self):
@@ -131,23 +143,31 @@ class AddMealService(IMealAPIService):
         )
         self.logger.info("Meal added")
 
-        return BaseResponseDTO(
-            transactionUrn=self.urn,
-            status=APIStatus.SUCCESS,
-            responseMessage="Successfully added the meal.",
-            responseKey="success_add_meal",
-            data={
+        cache_key = f"meal_details_{request_dto.meal_name}"
+        self.cache.delete(cache_key)
+
+        data = {
                 "urn": meal_log.urn,
                 "meal_name": meal_log.meal_name,
                 "servings": meal_log.servings,
                 "nutrients_per_serving": meal_log.nutrients,
                 "ingredients_per_serving": meal_log.ingredients,
                 "instructions_per_serving": meal_log.instructions,
-                "total_calories_per_serving":
-                    meal_log.total_calories_per_serving,
+                "total_calories_per_serving": (
+                    meal_log.total_calories_per_serving
+                ),
                 "total_calories": meal_log.total_calories,
                 "calories_unit": meal_log.calories_unit,
-                "created_on": str(meal_log.created_on),
                 "source": "usda"
-            },
+            }
+
+        self.logger.info("Caching meal details")
+        self.cache.set(cache_key, json.dumps(data))
+
+        return BaseResponseDTO(
+            transactionUrn=self.urn,
+            status=APIStatus.SUCCESS,
+            responseMessage="Successfully added the meal.",
+            responseKey="success_add_meal",
+            data=data,
         )

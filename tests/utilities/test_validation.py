@@ -13,7 +13,7 @@ from utilities.validation import (
 class TestValidationUtility(TestIUtility):
     """Test cases for ValidationUtility class."""
 
-    def test_validate_password_strength_strong_password(self):
+    async def test_validate_password_strength_strong_password(self):
         """Test strong password validation."""
         strong_password = "StrongPass123!"
         result = ValidationUtility.validate_password_strength(strong_password)
@@ -21,7 +21,7 @@ class TestValidationUtility(TestIUtility):
         assert result['is_valid'] is True
         assert len(result['issues']) == 0
 
-    def test_validate_password_strength_weak_password(self):
+    async def test_validate_password_strength_weak_password(self):
         """Test weak password validation."""
         weak_password = "weak"
         result = ValidationUtility.validate_password_strength(weak_password)
@@ -30,7 +30,7 @@ class TestValidationUtility(TestIUtility):
         assert len(result['issues']) > 0
         assert "at least 8 characters" in result['issues'][0]
 
-    def test_validate_password_strength_common_password(self):
+    async def test_validate_password_strength_common_password(self):
         """Test common password detection."""
         common_password = "password"
         result = ValidationUtility.validate_password_strength(common_password)
@@ -38,7 +38,7 @@ class TestValidationUtility(TestIUtility):
         assert result['is_valid'] is False
         assert any("too common" in issue for issue in result['issues'])
 
-    def test_validate_email_format_valid(self):
+    async def test_validate_email_format_valid(self):
         """Test valid email format."""
         valid_email = "test@test.com"
         result = ValidationUtility.validate_email_format(valid_email)
@@ -46,7 +46,7 @@ class TestValidationUtility(TestIUtility):
         assert result['is_valid'] is True
         assert result['normalized_email'] == valid_email
 
-    def test_validate_email_format_invalid(self):
+    async def test_validate_email_format_invalid(self):
         """Test invalid email format."""
         invalid_email = "invalid-email"
         result = ValidationUtility.validate_email_format(invalid_email)
@@ -54,21 +54,21 @@ class TestValidationUtility(TestIUtility):
         assert result['is_valid'] is False
         assert 'error' in result
 
-    def test_validate_uuid_format_valid(self):
+    async def test_validate_uuid_format_valid(self):
         """Test valid UUID format."""
         valid_uuid = "123e4567-e89b-12d3-a456-426614174000"
         result = ValidationUtility.validate_uuid_format(valid_uuid)
 
         assert result is True
 
-    def test_validate_uuid_format_invalid(self):
+    async def test_validate_uuid_format_invalid(self):
         """Test invalid UUID format."""
         invalid_uuid = "not-a-uuid"
         result = ValidationUtility.validate_uuid_format(invalid_uuid)
 
         assert result is False
 
-    def test_validate_date_range_valid(self):
+    async def test_validate_date_range_valid(self):
         """Test valid date range."""
         start_date = datetime.now()
         end_date = start_date + timedelta(days=30)
@@ -76,7 +76,7 @@ class TestValidationUtility(TestIUtility):
 
         assert result['is_valid'] is True
 
-    def test_validate_date_range_invalid_order(self):
+    async def test_validate_date_range_invalid_order(self):
         """Test invalid date range (end before start)."""
         start_date = datetime.now()
         end_date = start_date - timedelta(days=1)
@@ -85,7 +85,7 @@ class TestValidationUtility(TestIUtility):
         assert result['is_valid'] is False
         assert 'before end date' in result['error']
 
-    def test_validate_date_range_too_long(self):
+    async def test_validate_date_range_too_long(self):
         """Test date range exceeding maximum days."""
         start_date = datetime.now()
         end_date = start_date + timedelta(days=400)
@@ -98,21 +98,21 @@ class TestValidationUtility(TestIUtility):
         assert result['is_valid'] is False
         assert 'exceed 365 days' in result['error']
 
-    def test_sanitize_string_normal(self):
+    async def test_sanitize_string_normal(self):
         """Test normal string sanitization."""
         input_string = "Hello, World!"
         result = ValidationUtility.sanitize_string(input_string)
 
         assert result == "Hello, World!"
 
-    def test_sanitize_string_with_control_chars(self):
+    async def test_sanitize_string_with_control_chars(self):
         """Test string sanitization with control characters."""
         input_string = "Hello\x00World\x01!"
         result = ValidationUtility.sanitize_string(input_string)
 
         assert result == "HelloWorld!"
 
-    def test_sanitize_string_too_long(self):
+    async def test_sanitize_string_too_long(self):
         """Test string sanitization with length limit."""
         input_string = "A" * 2000
         result = ValidationUtility.sanitize_string(
@@ -123,22 +123,22 @@ class TestValidationUtility(TestIUtility):
         assert len(result) == 100
         assert result == "A" * 100
 
-    def test_validate_numeric_range_valid(self):
+    async def test_validate_numeric_range_valid(self):
         """Test valid numeric range."""
         result = ValidationUtility.validate_numeric_range(5, 1, 10)
         assert result is True
 
-    def test_validate_numeric_range_invalid(self):
+    async def test_validate_numeric_range_invalid(self):
         """Test invalid numeric range."""
         result = ValidationUtility.validate_numeric_range(15, 1, 10)
         assert result is False
 
-    def test_validate_string_length_valid(self):
+    async def test_validate_string_length_valid(self):
         """Test valid string length."""
         result = ValidationUtility.validate_string_length("test", 1, 10)
         assert result is True
 
-    def test_validate_string_length_invalid(self):
+    async def test_validate_string_length_invalid(self):
         """Test invalid string length."""
         result = ValidationUtility.validate_string_length("", 1, 10)
         assert result is False
@@ -147,7 +147,7 @@ class TestValidationUtility(TestIUtility):
 class TestSecurityValidators:
     """Test cases for SecurityValidators class."""
 
-    def test_validate_sql_injection_prevention_safe(self):
+    async def test_validate_sql_injection_prevention_safe(self):
         """Test safe input for SQL injection prevention."""
         safe_input = "Hello, World!"
         result = SecurityValidators.validate_sql_injection_prevention(
@@ -156,7 +156,7 @@ class TestSecurityValidators:
 
         assert result is True
 
-    def test_validate_sql_injection_prevention_dangerous(self):
+    async def test_validate_sql_injection_prevention_dangerous(self):
         """Test dangerous input for SQL injection prevention."""
         dangerous_input = "'; DROP TABLE users; --"
         result = SecurityValidators.validate_sql_injection_prevention(
@@ -165,21 +165,21 @@ class TestSecurityValidators:
 
         assert result is False
 
-    def test_validate_xss_prevention_safe(self):
+    async def test_validate_xss_prevention_safe(self):
         """Test safe input for XSS prevention."""
         safe_input = "Hello, World!"
         result = SecurityValidators.validate_xss_prevention(safe_input)
 
         assert result is True
 
-    def test_validate_xss_prevention_dangerous(self):
+    async def test_validate_xss_prevention_dangerous(self):
         """Test dangerous input for XSS prevention."""
         dangerous_input = "<script>alert('xss')</script>"
         result = SecurityValidators.validate_xss_prevention(dangerous_input)
 
         assert result is False
 
-    def test_validate_path_traversal_prevention_safe(self):
+    async def test_validate_path_traversal_prevention_safe(self):
         """Test safe input for path traversal prevention."""
         safe_input = "normal/path/file.txt"
         result = SecurityValidators.validate_path_traversal_prevention(
@@ -188,7 +188,7 @@ class TestSecurityValidators:
 
         assert result is True
 
-    def test_validate_path_traversal_prevention_dangerous(self):
+    async def test_validate_path_traversal_prevention_dangerous(self):
         """Test dangerous input for path traversal prevention."""
         dangerous_input = "../../../etc/passwd"
         result = SecurityValidators.validate_path_traversal_prevention(
@@ -201,7 +201,7 @@ class TestSecurityValidators:
 class TestEnhancedBaseModel:
     """Test cases for EnhancedBaseModel class."""
 
-    def test_sanitize_strings_validator(self):
+    async def test_sanitize_strings_validator(self):
         """Test string sanitization validator."""
         class TestModel(EnhancedBaseModel):
             name: str
@@ -211,7 +211,7 @@ class TestEnhancedBaseModel:
         assert model.name == "John Doe"
         assert model.description == "A test description"
 
-    def test_validate_security_safe(self):
+    async def test_validate_security_safe(self):
         """Test security validation with safe input."""
         class TestModel(EnhancedBaseModel):
             name: str
@@ -223,7 +223,7 @@ class TestEnhancedBaseModel:
         assert result['is_valid'] is True
         assert len(result['issues']) == 0
 
-    def test_validate_security_dangerous(self):
+    async def test_validate_security_dangerous(self):
         """Test security validation with dangerous input."""
         class TestModel(EnhancedBaseModel):
             name: str
@@ -239,7 +239,7 @@ class TestEnhancedBaseModel:
         assert len(result['issues']) > 0
         assert any("XSS" in issue for issue in result['issues'])
 
-    def test_extra_fields_forbidden(self):
+    async def test_extra_fields_forbidden(self):
         """Test that extra fields are forbidden."""
         class TestModel(EnhancedBaseModel):
             name: str

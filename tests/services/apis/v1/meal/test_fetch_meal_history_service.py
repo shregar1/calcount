@@ -1,7 +1,7 @@
 import datetime
 import pytest
 
-from unittest.mock import Mock, AsyncMock
+from unittest.mock import Mock
 
 from constants.api_status import APIStatus
 
@@ -48,14 +48,14 @@ class TestFetchMealHistoryService(TestIV1APIService):
                 api_name=api_name,
                 user_id=user_id,
                 meal_log_repository=meal_log_repository,
+                cache=Mock(),
             )
         )
-        self.fetch_meal_history_service.cache = Mock()
-        self.fetch_meal_history_service.cache.get = (
-            AsyncMock(return_value=None)
+        self.fetch_meal_history_service.cache.get = Mock(
+            return_value='{}'
         )
-        self.fetch_meal_history_service.cache.set = (
-            AsyncMock(return_value=None)
+        self.fetch_meal_history_service.cache.set = Mock(
+            return_value=None
         )
 
     @pytest.fixture

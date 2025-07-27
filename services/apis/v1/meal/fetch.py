@@ -83,7 +83,8 @@ class FetchMealService(IMealAPIService):
     async def run(self, request_dto: FetchMealRequestDTO) -> BaseResponseDTO:
 
         cache_key = f"meal_details_{request_dto.meal_name}"
-        cached_data = await self.cache.get(cache_key)
+        self.logger.info(f"Cache key: {cache_key}")
+        cached_data = self.cache.get(cache_key)
         if cached_data:
 
             self.logger.info("Meal details fetched from cache")
@@ -134,7 +135,7 @@ class FetchMealService(IMealAPIService):
             }
 
         self.logger.info("Caching meal details")
-        await self.cache.set(cache_key, json.dumps(data))
+        self.cache.set(cache_key, json.dumps(data))
 
         return BaseResponseDTO(
             transactionUrn=self.urn,

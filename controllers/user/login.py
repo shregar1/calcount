@@ -113,37 +113,36 @@ class UserLoginController(IUserController):
             JWTUtilityDependency.derive
         )
     ) -> JSONResponse:
+        try:
 
-        self.logger.debug("Fetching request URN")
-        self.urn = request.state.urn
-        self.user_id = getattr(request.state, "user_id", None)
-        self.user_urn = getattr(request.state, "user_urn", None)
-        self.logger = self.logger.bind(
-            urn=self.urn, user_urn=self.user_urn, api_name=self.api_name
-        )
-        self.dictionary_utility: DictionaryUtility = (
-            dictionary_utility(
+            self.logger.debug("Fetching request URN")
+            self.urn = request.state.urn
+            self.user_id = getattr(request.state, "user_id", None)
+            self.user_urn = getattr(request.state, "user_urn", None)
+            self.logger = self.logger.bind(
+                urn=self.urn, user_urn=self.user_urn, api_name=self.api_name
+            )
+            self.dictionary_utility: DictionaryUtility = (
+                dictionary_utility(
+                    urn=self.urn,
+                    user_urn=self.user_urn,
+                    api_name=self.api_name,
+                    user_id=self.user_id,
+                )
+            )
+            self.jwt_utility: JWTUtility = jwt_utility(
                 urn=self.urn,
                 user_urn=self.user_urn,
                 api_name=self.api_name,
                 user_id=self.user_id,
             )
-        )
-        self.jwt_utility: JWTUtility = jwt_utility(
-            urn=self.urn,
-            user_urn=self.user_urn,
-            api_name=self.api_name,
-            user_id=self.user_id,
-        )
-        self.user_repository: UserRepository = user_repository(
-            urn=self.urn,
-            user_urn=self.user_urn,
-            api_name=self.api_name,
-            user_id=self.user_id,
-            session=session,
-        )
-
-        try:
+            self.user_repository: UserRepository = user_repository(
+                urn=self.urn,
+                user_urn=self.user_urn,
+                api_name=self.api_name,
+                user_id=self.user_id,
+                session=session,
+            )
 
             self.logger.debug("Validating request")
             await self.validate_request(

@@ -363,7 +363,7 @@ class TestFetchMealRecommendationService(TestIV1APIService):
         mock_meal_recommendation_dto,
     ):
         service = self.fetch_meal_recommendation_service
-        service.generate_meal_recommendation = Mock(
+        service.generate_meal_recommendation = AsyncMock(
             return_value=mock_meal_recommendation_dto
         )
 
@@ -397,7 +397,7 @@ class TestFetchMealRecommendationService(TestIV1APIService):
         mock_meal_recommendation_dto,
     ):
         service = self.fetch_meal_recommendation_service
-        service.generate_meal_recommendation = Mock(
+        service.generate_meal_recommendation = AsyncMock(
             return_value=mock_meal_recommendation_dto
         )
 

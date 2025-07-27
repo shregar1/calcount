@@ -3,7 +3,6 @@ from fastapi.responses import JSONResponse
 from http import HTTPStatus
 from sqlalchemy.orm import Session
 from typing import Callable
-from loguru import logger
 
 from controllers.user.abstraction import IUserController
 
@@ -43,7 +42,7 @@ class UserRegistrationController(IUserController):
         self._user_urn: str = user_urn
         self._api_name: str = APILK.REGISTRATION
         self._user_id: str = user_id
-        self._logger: logger = self.logger
+        self._logger = self.logger
         self._dictionary_utility: DictionaryUtility = None
 
     @property
@@ -110,33 +109,33 @@ class UserRegistrationController(IUserController):
         ),
     ) -> JSONResponse:
 
-        self.logger.debug("Fetching request URN")
-        self.urn: str = request.state.urn
-        self.user_id: str = getattr(request.state, "user_id", None)
-        self.user_urn: str = getattr(request.state, "user_urn", None)
-        self.logger: logger = self.logger.bind(
-            urn=self.urn,
-            user_urn=self.user_urn,
-            api_name=self.api_name,
-            user_id=self.user_id,
-        )
-        self.dictionary_utility: DictionaryUtility = (
-            dictionary_utility(
+        try:
+
+            self.logger.debug("Fetching request URN")
+            self.urn: str = request.state.urn
+            self.user_id: str = getattr(request.state, "user_id", None)
+            self.user_urn: str = getattr(request.state, "user_urn", None)
+            self.logger = self.logger.bind(
                 urn=self.urn,
                 user_urn=self.user_urn,
                 api_name=self.api_name,
                 user_id=self.user_id,
             )
-        )
-        self.user_repository: UserRepository = user_repository(
-            urn=self.urn,
-            user_urn=self.user_urn,
-            api_name=self.api_name,
-            user_id=self.user_id,
-            session=session,
-        )
-
-        try:
+            self.dictionary_utility: DictionaryUtility = (
+                dictionary_utility(
+                    urn=self.urn,
+                    user_urn=self.user_urn,
+                    api_name=self.api_name,
+                    user_id=self.user_id,
+                )
+            )
+            self.user_repository: UserRepository = user_repository(
+                urn=self.urn,
+                user_urn=self.user_urn,
+                api_name=self.api_name,
+                user_id=self.user_id,
+                session=session,
+            )
 
             self.logger.debug("Validating request")
             await self.validate_request(

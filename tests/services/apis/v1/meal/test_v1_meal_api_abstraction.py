@@ -261,6 +261,7 @@ class TestIV1MealAPIService(TestIV1APIService):
             user_urn=user_urn,
             api_name=api_name,
             meal_log_repository=self.meal_log_repository,
+            cache=Mock(),
         )
 
     @pytest.fixture

@@ -103,7 +103,7 @@ class FetchMealRecommendationService(IMealAPIService):
                 "ingredients": meal.ingredients,
             })
 
-        meal_recommendation_data = self.generate_meal_recommendation(
+        meal_recommendation_data = await self.generate_meal_recommendation(
             food_category=food_category,
             meal_history=meal_history_data
         )

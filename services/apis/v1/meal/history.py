@@ -1,5 +1,4 @@
 import collections
-import json
 
 from redis import Redis
 
@@ -101,19 +100,6 @@ class FetchMealHistoryService(IMealAPIService):
 
         from_date = request_dto.from_date
         to_date = request_dto.to_date
-        cache_key = (
-            f"meal_history_{self.user_id}_{from_date}_{to_date}"
-        )
-        cached_data = await self.cache.get(cache_key)
-        if cached_data:
-            self.logger.info("Meal history fetched from cache")
-            return BaseResponseDTO(
-                transactionUrn=self.urn,
-                status=APIStatus.SUCCESS,
-                responseMessage="Successfully fetched the meal history.",
-                responseKey="success_fetch_meal",
-                data=json.loads(cached_data),
-            )
 
         self.logger.info(
             f"Fetching meal history for user_id={self.user_id}"
@@ -159,8 +145,6 @@ class FetchMealHistoryService(IMealAPIService):
             })
 
         data = dict(meal_history_data)
-        self.logger.info("Caching meal history")
-        await self.cache.set(cache_key, json.dumps(data))
 
         self.logger.info("Returning meal history response")
         return BaseResponseDTO(

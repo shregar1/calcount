@@ -78,6 +78,9 @@ class TestAddMealService(TestIV1MealAPIService):
             return_value=mock_meal_log
         )
 
+        service.cache = Mock()
+        service.cache.delete = Mock(return_value=None)
+        service.cache.set = Mock(return_value=None)
         result = await service.run(
             request_dto=valid_add_meal_data_with_instructions
         )
@@ -134,6 +137,9 @@ class TestAddMealService(TestIV1MealAPIService):
             return_value=mock_meal_log
         )
 
+        service.cache = Mock()
+        service.cache.delete = Mock(return_value=None)
+        service.cache.set = Mock(return_value=None)
         result = await service.run(
             request_dto=valid_add_meal_data_without_instructions
         )

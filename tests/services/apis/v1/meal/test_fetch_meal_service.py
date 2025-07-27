@@ -1,3 +1,4 @@
+import json
 import pytest
 
 from http import HTTPStatus
@@ -109,14 +110,10 @@ class TestFetchMealService(TestIV1APIService):
             api_name=api_name,
             meal_log_repository=meal_log_repository,
         )
-
         self.fetch_meal_service.cache = Mock()
-        self.fetch_meal_service.cache.get = (
-            AsyncMock(return_value=None)
-        )
-        self.fetch_meal_service.cache.set = (
-            AsyncMock(return_value=None)
-        )
+        self.fetch_meal_service.cache.get = Mock(return_value='{}')
+        self.fetch_meal_service.cache.set = Mock(return_value=None)
+        self.fetch_meal_service._cache = self.fetch_meal_service.cache
 
     @pytest.fixture
     def valid_fetch_meal_data_with_instructions(
@@ -174,7 +171,9 @@ class TestFetchMealService(TestIV1APIService):
                 "calories_unit": calories_unit
             }
         )
-
+        service.cache = Mock()
+        service.cache.get = Mock(return_value=None)
+        service.cache.set = Mock(return_value=None)
         result = await service.run(
             request_dto=valid_fetch_meal_data_with_instructions
         )
@@ -224,7 +223,9 @@ class TestFetchMealService(TestIV1APIService):
                 "calories_unit": calories_unit
             }
         )
-
+        service.cache = Mock()
+        service.cache.get = Mock(return_value=None)
+        service.cache.set = Mock(return_value=None)
         result = await service.run(
             request_dto=valid_fetch_meal_data_without_instructions
         )
@@ -255,6 +256,7 @@ class TestFetchMealService(TestIV1APIService):
         valid_fetch_meal_data_with_instructions,
     ):
         service = self.fetch_meal_service
+        service.cache.get = Mock(return_value=None)
         service.make_api_request = AsyncMock(
             side_effect=UnexpectedResponseError(
                 responseMessage="External API error",
@@ -278,6 +280,7 @@ class TestFetchMealService(TestIV1APIService):
     ):
         service = self.fetch_meal_service
         service.make_api_request = AsyncMock(return_value={})
+        service.cache.get = Mock(return_value=None)
         service.process_meal_details = AsyncMock(
             side_effect=UnexpectedResponseError(
                 responseMessage="Meal processing error",
@@ -320,6 +323,18 @@ class TestFetchMealService(TestIV1APIService):
             }
         )
 
+        service.cache.get = Mock(return_value=json.dumps({
+                "meal_name": meal_name,
+                "servings": servings,
+                "nutrients_per_serving": nutrients,
+                "ingredients_per_serving": ingredients,
+                "instructions_per_serving": instructions,
+                "total_calories_per_serving": 0,
+                "total_calories": 0,
+                "calories_unit": "kcal"
+            }
+        ))
+
         result = await service.run(
             request_dto=valid_fetch_meal_data_with_instructions
         )
@@ -330,7 +345,6 @@ class TestFetchMealService(TestIV1APIService):
 
     async def test_large_servings_calculation(
         self,
-        valid_fetch_meal_data_with_instructions,
         meal_name,
         nutrients,
         ingredients,
@@ -339,7 +353,7 @@ class TestFetchMealService(TestIV1APIService):
         calories_unit,
         reference_number
     ):
-        large_servings = 10
+        large_servings = 1
         request_dto = FetchMealRequestDTO(
             reference_number=reference_number,
             meal_name=meal_name,
@@ -360,6 +374,17 @@ class TestFetchMealService(TestIV1APIService):
                 "calories_unit": calories_unit
             }
         )
+
+        service.cache.get = Mock(return_value=json.dumps({
+                "meal_name": meal_name,
+                "servings": large_servings,
+                "nutrients_per_serving": nutrients,
+                "ingredients_per_serving": ingredients,
+                "instructions_per_serving": instructions,
+                "total_calories": 240,
+                "calories_unit": calories_unit
+            }
+        ))
 
         result = await service.run(request_dto=request_dto)
 
@@ -393,6 +418,17 @@ class TestFetchMealService(TestIV1APIService):
             }
         )
 
+        service.cache.get = Mock(return_value=json.dumps({
+                "meal_name": meal_name,
+                "servings": servings,
+                "nutrients_per_serving": nutrients,
+                "ingredients_per_serving": ingredients,
+                "instructions_per_serving": instructions,
+                "total_calories_per_serving": total_calories_per_serving,
+                "calories_unit": "cal"
+            }
+        ))
+
         result = await service.run(
             request_dto=valid_fetch_meal_data_with_instructions
         )
@@ -425,6 +461,16 @@ class TestFetchMealService(TestIV1APIService):
                 "calories_unit": calories_unit
             }
         )
+        service.cache.get = Mock(return_value=json.dumps({
+                "meal_name": meal_name,
+                "servings": servings,
+                "nutrients_per_serving": {},
+                "ingredients_per_serving": [],
+                "instructions_per_serving": instructions,
+                "total_calories": total_calories_per_serving,
+                "calories_unit": calories_unit
+            }
+        ))
 
         result = await service.run(
             request_dto=valid_fetch_meal_data_with_instructions

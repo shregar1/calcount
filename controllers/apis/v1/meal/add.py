@@ -1,15 +1,16 @@
 from fastapi import Request, Depends
 from fastapi.responses import JSONResponse
 from http import HTTPStatus
+from redis import Redis
 from sqlalchemy.orm import Session
 from typing import Callable
-from loguru import logger
 
 from controllers.apis.v1.meal.abstraction import IV1MealAPIController
 
 from constants.api_lk import APILK
 from constants.api_status import APIStatus
 
+from dependencies.cache import CacheDependency
 from dependencies.db import DBDependency
 from dependencies.repositiories.meal_log import MealLogRepositoryDependency
 from dependencies.services.apis.v1.meal.add import AddMealServiceDependency
@@ -41,7 +42,7 @@ class AddMealController(IV1MealAPIController):
         self._user_urn: str = user_urn
         self._api_name: str = APILK.ADD_MEAL
         self._user_id: str = user_id
-        self._logger: logger = self.logger
+        self._logger = self.logger
         self._dictionary_utility: DictionaryUtility = None
 
     @property
@@ -97,6 +98,7 @@ class AddMealController(IV1MealAPIController):
         request: Request,
         request_payload: AddMealRequestDTO,
         session: Session = Depends(DBDependency.derive),
+        cache: Redis = Depends(CacheDependency.derive),
         meal_log_repository: Callable = Depends(
             MealLogRepositoryDependency.derive
         ),
@@ -107,33 +109,32 @@ class AddMealController(IV1MealAPIController):
             DictionaryUtilityDependency.derive
         ),
     ) -> JSONResponse:
-
-        self.logger.debug("Fetching request URN")
-        self.urn: str = request.state.urn
-        self.user_id: str = getattr(request.state, "user_id", None)
-        self.user_urn: str = getattr(request.state, "user_urn", None)
-        self.logger: logger = self.logger.bind(
-            urn=self.urn,
-            user_urn=self.user_urn,
-            api_name=self.api_name,
-            user_id=self.user_id,
-        )
-        self.dictionary_utility: DictionaryUtility = (
-            dictionary_utility(
+        try:
+            self.logger.debug("Fetching request URN")
+            self.urn: str = request.state.urn
+            self.user_id: str = getattr(request.state, "user_id", None)
+            self.user_urn: str = getattr(request.state, "user_urn", None)
+            self.logger = self.logger.bind(
                 urn=self.urn,
                 user_urn=self.user_urn,
                 api_name=self.api_name,
                 user_id=self.user_id,
             )
-        )
-        self.meal_log_repository: MealLogRepository = meal_log_repository(
-            urn=self.urn,
-            user_urn=self.user_urn,
-            api_name=self.api_name,
-            user_id=self.user_id,
-            session=session,
-        )
-        try:
+            self.dictionary_utility: DictionaryUtility = (
+                dictionary_utility(
+                    urn=self.urn,
+                    user_urn=self.user_urn,
+                    api_name=self.api_name,
+                    user_id=self.user_id,
+                )
+            )
+            self.meal_log_repository: MealLogRepository = meal_log_repository(
+                urn=self.urn,
+                user_urn=self.user_urn,
+                api_name=self.api_name,
+                user_id=self.user_id,
+                session=session,
+            )
 
             self.logger.debug("Validating request")
             await self.validate_request(
@@ -153,6 +154,7 @@ class AddMealController(IV1MealAPIController):
                 api_name=self.api_name,
                 user_id=self.user_id,
                 meal_log_repository=self.meal_log_repository,
+                cache=cache,
             )
             response_dto: BaseResponseDTO = await service.run(
                 request_dto=request_payload
