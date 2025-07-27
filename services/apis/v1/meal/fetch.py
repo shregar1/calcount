@@ -126,7 +126,13 @@ class FetchMealService(IMealAPIService):
         self.logger.info("Meal details parsed")
 
         total_calories_per_serving = meal_data.get("total_calories")
+        if total_calories_per_serving is None:
+            total_calories_per_serving = 0
+
         calories_unit = meal_data.get("calories_unit")
+        if calories_unit is None:
+            calories_unit = "KCAL"
+
         total_calories = total_calories_per_serving * request_dto.servings
 
         data = {

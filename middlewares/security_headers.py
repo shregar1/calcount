@@ -252,9 +252,6 @@ class SecurityHeadersMiddleware(BaseHTTPMiddleware):
             del response.headers["Server"]
 
         logger.info(
-            "Security headers applied",
-            path=request.url.path,
-            method=request.method,
-            headers=dict(response.headers),
+            "Security headers applied"
         )
         return response
