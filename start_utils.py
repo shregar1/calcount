@@ -120,6 +120,8 @@ unprotected_routes: set = {
     "/health",
     "/user/login",
     "/user/register",
+    "/docs",
+    "/redoc",
 }
 callback_routes: set = set()
 
